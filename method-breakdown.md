@@ -25,7 +25,7 @@ with fully defined data structure.
 ## `get_all_requests()`
 
 Written by Will, called by Jake in `download_all_requests()`. This
-will return a `list` of `request` objects.
+will return a `list` of `request` objects from the database.
 
 ## `download_all_requests()`
 
