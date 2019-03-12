@@ -29,10 +29,11 @@ will return a `list` of `request` objects.
 
 ## `download_all_requests()`
 
-Could be called by Nick. This will call `get_all_requests()` and
-actually execute the reqeuest. After it is done downloading, will call
-`update_request(status, location)`. This will update the location of
-the download and the status of the download.
+Could be called by Nick, Written by Jake. This will call
+`get_all_requests()` and actually execute the reqeuest. After it is
+done downloading, will call `update_request(status, location)`. This
+will update the location of the download and the status of the
+download.
 
 ## `update_request(status, location)`
 
