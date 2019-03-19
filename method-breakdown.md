@@ -2,10 +2,10 @@
 
 ## What is in the `request` object?
 
-- `type`, string, will be a set number of values, like "HTTP URL",
+- `kind`, string, will be a set number of values, like "HTTP URL",
   "Description", "IPFS Hash", etc
 - `value`, string, stores the value associated with the request. For
-  example, if `type` is `"description"`, then `value` could be
+  example, if `kind` is `"description"`, then `value` could be
   `"Calculus textbook written by Joe Smith"`
 - `user`, own object, contains thier username (and password?) that the
   request is associated with
