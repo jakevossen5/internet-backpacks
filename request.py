@@ -1,4 +1,4 @@
-class request:
+class Request:
     'This is the main object that stores information about somones request'
     def __init__(self, kind, value, user, date):
         self.kind = kind # options: "search, url, IPFS hash, git URL
