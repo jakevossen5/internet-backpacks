@@ -5,10 +5,10 @@ from user import user
 
 # connect to the database
 connection = psycopg2.connect(
-    host = "127.0.0.1",
+    host = "",  # depends on host
     database = "internetdata",
     user = "postgres",
-    password = "uD4ph2stu",
+    password = "",
     port = "5432"
 )
 
