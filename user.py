@@ -1,4 +1,4 @@
-class user:
+class User:
     def __init__(self, first_name, last_name, username, password):
         self.ID = ""  # ID not needed for inserting into database and can be mapped to the object later
         self.first_name = first_name
