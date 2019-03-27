@@ -4,6 +4,7 @@ from datetime import datetime
 import urllib.request
 import urllib.parse
 import re
+import os
 def download_all_requests(requests):
     for r in requests:
         download_request(r)
@@ -16,7 +17,11 @@ def download_request(r):
         regex = re.compile('<title>(.*?)</title>', re.IGNORECASE|re.DOTALL)
         title = regex.search(html_contents).group(1)
         print("title:", title)
-        file = open("output/" + title + ".html","w")
+        
+        newpath = "output/" + r.uuid 
+        if not os.path.exists(newpath):
+            os.makedirs(newpath)
+        file = open("output/" + r.uuid + "/" + title + ".html","w")
         file.write(html_contents)
 
     # file = open("/tmp/test.html","w")
