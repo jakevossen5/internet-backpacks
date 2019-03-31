@@ -10,6 +10,6 @@ class Request:
         self.uuid=str(uuid.uuid4())
         self.file_location = "" # There is no downloaded location when the object is created
     def set_downloaded_status(self, state):
-        self.state = state # Should be a boolean
+        self.downloaded_status = state # Should be a boolean
     def set_file_location(self, loc):
-        self.location = loc # Is there a file object that would be better to use than a string?
+        self.file_location = loc # Is there a file object that would be better to use than a string?
