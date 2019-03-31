@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\begin{document}
+
+\title{Command and Control Subsystems Report}
+\author{Jake Vossen: OREPACKAGERS}
+
+\maketitle
+
+% \begin{abstract}
+% The abstract text goes here.
+% \end{abstract}
+
+\section{Subsystem Description}
+The Command and Control subsystem is the subsystem responsible for
+converting the requests that have been collected into downloaded data
+to be distributed to users. It starts by receiving a list of
+\texttt{request} objects - a structure for contating information about
+each request. To prevent confusion, the mono-spaced \texttt{request}
+will refer to they Python object itself, wheras plain ``request''
+refers to the concept of a user request.
+
+With this list of requests, the first thing it does is use Pythons
+\texttt{multiprocessing}[1] library to split work up between the
+different threads on the computer. While this software is designed
+for low end machines to be more accessable to developing areas, most
+computers[2] in recent times will have more than 1 CPU core (including
+the Raspberry Pi[3]). This allows for the processor to split up all
+the requests, and execute them in paralel, instead of waiting for each
+one to finish individually, which can provide a large preformance
+boost.
+
+When downloading a \texttt{request}, it determens the type of
+request. The types are URL, search, youtube, and ipfs. The steps for
+each type of request is outlined below.
+
+\subsection{URLs}
+
+URLs are your basic websites, such as \url{https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail}
+
+
+\subsection{Subsection Heading Here}
+Write your subsection text here.
+
+\section{Conclusion}
+Write your conclusion here.
+
+\end{document}
+
+%[1] https://docs.python.org/3.7/library/multiprocessing.html
+%[2] https://www.pcbenchmarks.net/number-of-cpu-cores.html
+%[3] https://www.raspberrypi.org/products/raspberry-pi-3-model-b/
