@@ -15,7 +15,7 @@ def connect():
         host="127.0.0.1",  # depends on host
         database="internetdata",
         user="postgres",
-        password="uD4ph2stu",
+        password="",
         port="5432"
     )
 
