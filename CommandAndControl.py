@@ -57,12 +57,12 @@ def download_from_ipfs(ipfs_hash, path):
 def main():
     requests = []
     # tests
-    requests.append(Request("URL", "https://www.google.com/", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
-    requests.append(Request("URL", "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
-    requests.append(Request("URL", "https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
-    requests.append(Request("search", "What Is the Airspeed Velocity of an Unladen Swallow?", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    # requests.append(Request("URL", "https://www.google.com/", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    # requests.append(Request("URL", "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    # requests.append(Request("URL", "https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    # requests.append(Request("search", "What Is the Airspeed Velocity of an Unladen Swallow?", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     requests.append(Request("youtube", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
-    requests.append(Request("ipfs", "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    # requests.append(Request("ipfs", "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     
     download_all_requests(requests)
 
