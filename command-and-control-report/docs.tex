@@ -2,6 +2,7 @@
 \usepackage{graphicx}
 \usepackage[margin=1in]{geometry}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\usepackage{graphicx}
 \begin{document}
 
 \title{Command and Control Subsystems Report}
@@ -33,8 +34,12 @@ one to finish individually, which can provide a large preformance
 boost.
 
 When downloading a \texttt{request}, it determens the type of
-request. The types are URL, search, youtube, and ipfs. The steps for
-each type of request is outlined below. 
+request. The types are URL, search, youtube, and ipfs. It follows this
+flow chart to decide what to do:
+
+\includegraphics[width=\textwidth]{log-flow-chart.png}
+
+The steps for each type of request is outlined below.
 
 \subsection{URLs}
 
@@ -109,6 +114,36 @@ number of servers, not just the origional person hosting the
 server. The \texttt{ipfs} command line utility[9] is used to retreive
 objects.
 
+\section{Interfaces with Other Subsystems}
+
+Software is all about abstraction, so there are a handful of points in
+which the Command and Control subsystem will interface with the other
+subsystems. Ideally, all the other subsystems will work indepenedently
+and a couple of links will get everything working together.
+
+\subsection{Input - List of Requests}
+
+Python only stores objects in memory while the program is
+running. That means when the program is shut down (or the machine is
+powered off), the data genereated must be saved somewhere on the
+device or else that information would be lost. In this case, what is
+important is to be able to store the \texttt{request} objects. This is
+completed by the data managment subsystem. This means my subsystem
+will call \texttt{get\_all\_requests()} which will retreive the data
+about the requests, create the objects again (as they where destroyed
+from memory when the program shut down), and return that information
+to Command and Control.
+
+\subsection{Output - Download path and status}
+
+Once my subsystem completes it's donwload, it needs to update the
+database about the new status. This is again through the Data
+Managment subsystem. To ensure we only download each object once, each
+\texttt{request} has two properties: \texttt{file\_location} and
+\texttt{downloaded\_status}. Once Command and Control has completed a
+download, it will call the Data Managment method
+\texttt{update\_request(r)} where \texttt{r} include the changes to
+\texttt{file\_location} and \texttt{downloaded\_status}. 
 
 \end{document}
 
