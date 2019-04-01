@@ -161,6 +161,49 @@ request.
     \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
 \end{figure}
 
+\section{Stakeholder Considerations}
+
+\section{Validation}
+
+Testing is one of the most fundamentally important things in software
+development. It is easy to write code, but it is not useful if it
+can't work under a variety of difficult tests.
+
+\begin{table}[h]
+  \centering
+  \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{l|l|l|l|l|l}
+
+Type & Value & Expected Value & Expected Hash & Actual Hash & Expected
+                                                              =
+                                                              Actual?
+      \\ \hline
+URL  & https://www.gutenberg.org/cache/epub/2265/pg2265.txt  & The
+                                                               Text of
+                              the Shakesphere play ``Hamlet'' &
+                                                                5faddfe6d16553ce7c95fab8e8325fecc0022ad3
+                                              &
+                                                5faddfe6d16553ce7c95fab8e8325fecc0022ad3
+                                                            & Yes
+      \\ \hline
+URL     &
+          https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf
+             &  PDF of Google Machine Learning Paper               &
+                                                                     1b81044d75d4c903e9f657c9640427af30619f02
+                                              &
+                                                1b81044d75d4c903e9f657c9640427af30619f02            &  Yes                  \\ \hline
+URL     &
+          https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail
+             &  Wikipedia entry for ``Monty Python and the Holy Grail''              & N/A              &  N/A
+                                                            &  Yes
+      \\ \hline
+     &       &                &               &             &                    \\
+     &       &                &               &             &                    \\
+     &       &                &               &             &                   
+\end{tabular}
+}
+\end{table}
+
 \end{document}
 
 %[1] https://docs.python.org/3.7/library/multiprocessing.html
@@ -173,3 +216,4 @@ request.
 %[8] https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf
 %[9] https://docs.ipfs.io/introduction/install/
 %[10] https://tools.ietf.org/html/rfc4122.html
+%[11] 
