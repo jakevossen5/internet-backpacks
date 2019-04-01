@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage{graphicx}
-\usepackage[margin=0.5in]{geometry}
+\usepackage[margin=1in]{geometry}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \begin{document}
 
@@ -71,7 +71,43 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
     url. So if the site links to an outside source (such as
     \texttt{otherwebsite.com/picture}) also gets downloaded if it is
     linked in the requested url.
- \end{itemize}
+  \end{itemize}
+All of those options ensures that downloading the URL requested get's
+the website exactly as it appears in a browser, including linked
+images. Additionally, it works with PDF and ZIP files, which is really
+important to ensure all possible media can be obtained. This method is
+also used by other parts of the program.
+
+\subsection{Search}
+
+Sometimes the user will not know exactly what they want, so we added
+an option to get the first page of Google results (top 10
+results). The \texttt{googlesearch}[5] library was very helpful for
+this. This library provides a list of URLs, and then we use the URL
+method to download those results (or the youtube download option if it
+is a youtube link). The results are each in thier own folder nammed
+based on the google search rank (1 is first result, 2 is second
+result, etc). 
+
+\subsection{YouTube}
+
+It is well known that lot of quality educational and entiertainment
+content is in video format, and the majority of that content is on
+YouTube. That is why we are adding functionallity to request YouTube
+videos (through a link, or a result from the search function). In this
+case, the \texttt{youtube-dl} program allows for content retrevial.
+
+\subsection{IPFS}
+IPFS stands for ``InterPlanetary File System'', which is a ``A
+peer-to-peer hypermedia protocol to make the web faster, safer, and
+more open''[7]. The internet that is familiar to most people is the
+client-server model[8], but IPFS changes that so everyone is both a
+client and a server. Media is distribtued based of their crytographic
+hash, a unique ID for each object instead of a URL. Anybody can add
+objects, and when requesting an object, it can be downloaded from any
+number of servers, not just the origional person hosting the
+server. The \texttt{ipfs} command line utility[9] is used to retreive
+objects.
 
 
 \end{document}
@@ -80,3 +116,8 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
 %[2] https://www.pcbenchmarks.net/number-of-cpu-cores.html
 %[3] https://www.raspberrypi.org/products/raspberry-pi-3-model-b/
 %[4] https://www.gnu.org/software/wget/manual/wget.html
+%[5] https://github.com/MarioVilas/googlesearch
+%[6] https://github.com/ytdl-org/youtube-dl/
+%[7] https://ipfs.io/
+%[8] https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf
+%[9] https://docs.ipfs.io/introduction/install/
