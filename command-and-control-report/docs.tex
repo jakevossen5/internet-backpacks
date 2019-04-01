@@ -37,7 +37,12 @@ When downloading a \texttt{request}, it determens the type of
 request. The types are URL, search, youtube, and ipfs. It follows this
 flow chart to decide what to do:
 
-\includegraphics[width=\textwidth]{log-flow-chart.png}
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=.6]{log-flow-chart.png}
+  \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Diagram describing flow chart of downloading each
+    \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
+\end{figure}
 
 The steps for each type of request is outlined below.
 
@@ -143,7 +148,18 @@ Managment subsystem. To ensure we only download each object once, each
 \texttt{downloaded\_status}. Once Command and Control has completed a
 download, it will call the Data Managment method
 \texttt{update\_request(r)} where \texttt{r} include the changes to
-\texttt{file\_location} and \texttt{downloaded\_status}. 
+\texttt{file\_location} and \texttt{downloaded\_status}. So the
+Data Managmnet subsystem knows which database entry to update, we use
+a Universily Uniquie Identifier (UUID)[10] to identify each
+request.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=.5]{input-output.png}
+  \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Diagram
+    describing the inputs and outputs of the Command and Control sub-system
+    \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
+\end{figure}
 
 \end{document}
 
@@ -156,3 +172,4 @@ download, it will call the Data Managment method
 %[7] https://ipfs.io/
 %[8] https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf
 %[9] https://docs.ipfs.io/introduction/install/
+%[10] https://tools.ietf.org/html/rfc4122.html
