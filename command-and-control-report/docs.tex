@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{graphicx}
-\usepackage{hyperref}
+\usepackage[margin=0.5in]{geometry}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \begin{document}
 
 \title{Command and Control Subsystems Report}
@@ -67,8 +68,9 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
     option.
   \item \texttt{-p} is the most important option, as it tells
     \texttt{wget} to download all the requirements as well as the
-    url. So \texttt{otherwebsite.com/picture} also gets downloaded if
-    it is linked in the requested url.
+    url. So if the site links to an outside source (such as
+    \texttt{otherwebsite.com/picture}) also gets downloaded if it is
+    linked in the requested url.
  \end{itemize}
 
 
