@@ -3,6 +3,9 @@
 \usepackage[margin=1in]{geometry}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{float}
+\restylefloat{table}
+
 \begin{document}
 
 \title{Command and Control Subsystems Report}
@@ -167,11 +170,26 @@ request.
 
 Testing is one of the most fundamentally important things in software
 development. It is easy to write code, but it is not useful if it
-can't work under a variety of difficult tests.
+can't work under a variety of difficult tests. A handful of curated
+tested designed to test the bounderies of the code have been
+picked. To verify the results, there are two primary methods. The
+first, is a SHA-512 sum, which is a crytographically secure way to
+ensure two files are the same[11]. The first file origionatty from a
+manual download, and the second one from the Command and Control
+Subsystem. If the two hashes are the same, the subsystem was
+successful. However, this cannot be used for all
+tests, because when downloading from a webiste, the origional HTML files
+are modified for browsing offline (see the \texttt{-k} option on
+wget. This makes it impossible to cryptographically ensure that the
+requested file is thhe same as the downloaded file, so a visual
+analysis is preformed to analize the two documents and ensure that
+they are identical. The table below explains the tests preformed,
+where the ``Analysis Method'' is either visual or hash to preform the
+check. 
 
 % Please add the following required packages to your document preamble:
 % \usepackage{graphicx}
-\begin{table}[]
+\begin{table}[H]
 \centering
 \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed
 Jake Vossen, 2019-04-01 \endgroup}
@@ -179,9 +197,11 @@ Jake Vossen, 2019-04-01 \endgroup}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l|l|l|l|l}
 Type   & Value                                                                                     & Expected Result                                       & Analysis Method & Expected = Actual? \\ \hline
-URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of "Hamlet" By Shakesphere                       & Hash            & Yes                \\ \hline
-  URL    & https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf & PDF of Google Machine Learning Research Paper         & Hash            & Yes                \\ \hline
-URL    & https://en.wikipedia.org/wiki/Monty\_Python\_and\_the\_Holy\_Grail                        & Wikipedia entry for "Monty Python and the Holy Grail" & Visual          & Yes                \\ \hline
+URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of ``Hamlet" By Shakesphere                       & Hash            & Yes                \\ \hline
+URL    & https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf & PDF of Google Machine Learning Research Paper         & Hash            & Yes                \\ \hline
+URL    & https://en.wikipedia.org/wiki/Monty\_Python\_and\_the\_Holy\_Grail                        & Wikipedia entry for ``Monty Python and the Holy Grail" & Visual          & Yes                \\ \hline
+youtube & https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                                                                                                   & Rick Roll                                 & Visual          & Yes                \\ \hline
 search & What Is the Airspeed Velocity of an Unladen Swallow?                                      & Google search results                                 & Visual          & Yes                \\ \hline
 ipfs   & /ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme                               & IPFS introduction document                            & Hash            & Yes                \\ \hline
 ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png                           & 300 MB picture of the moon                            & Hash            & Yes               
@@ -201,4 +221,4 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 %[8] https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf
 %[9] https://docs.ipfs.io/introduction/install/
 %[10] https://tools.ietf.org/html/rfc4122.html
-%[11] 
+%[11] https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
