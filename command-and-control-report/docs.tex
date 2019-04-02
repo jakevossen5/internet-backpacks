@@ -169,38 +169,23 @@ Testing is one of the most fundamentally important things in software
 development. It is easy to write code, but it is not useful if it
 can't work under a variety of difficult tests.
 
-\begin{table}[h]
-  \centering
-  \resizebox{\columnwidth}{!}{%
-    \begin{tabular}{l|l|l|l|l|l}
-
-Type & Value & Expected Value & Expected Hash & Actual Hash & Expected
-                                                              =
-                                                              Actual?
-      \\ \hline
-URL  & https://www.gutenberg.org/cache/epub/2265/pg2265.txt  & The
-                                                               Text of
-                              the Shakesphere play ``Hamlet'' &
-                                                                5faddfe6d16553ce7c95fab8e8325fecc0022ad3
-                                              &
-                                                5faddfe6d16553ce7c95fab8e8325fecc0022ad3
-                                                            & Yes
-      \\ \hline
-URL     &
-          https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf
-             &  PDF of Google Machine Learning Paper               &
-                                                                     1b81044d75d4c903e9f657c9640427af30619f02
-                                              &
-                                                1b81044d75d4c903e9f657c9640427af30619f02            &  Yes                  \\ \hline
-URL     &
-          https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail
-             &  Wikipedia entry for ``Monty Python and the Holy Grail''              & N/A              &  N/A
-                                                            &  Yes
-      \\ \hline
-     &       &                &               &             &                    \\
-     &       &                &               &             &                    \\
-     &       &                &               &             &                   
-\end{tabular}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[]
+\centering
+\caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed
+Jake Vossen, 2019-04-01 \endgroup}
+\label{my-label}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l|l|l|l|l}
+Type   & Value                                                                                     & Expected Result                                       & Analysis Method & Expected = Actual? \\ \hline
+URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of "Hamlet" By Shakesphere                       & Hash            & Yes                \\ \hline
+  URL    & https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf & PDF of Google Machine Learning Research Paper         & Hash            & Yes                \\ \hline
+URL    & https://en.wikipedia.org/wiki/Monty\_Python\_and\_the\_Holy\_Grail                        & Wikipedia entry for "Monty Python and the Holy Grail" & Visual          & Yes                \\ \hline
+search & What Is the Airspeed Velocity of an Unladen Swallow?                                      & Google search results                                 & Visual          & Yes                \\ \hline
+ipfs   & /ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme                               & IPFS introduction document                            & Hash            & Yes                \\ \hline
+ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png                           & 300 MB picture of the moon                            & Hash            & Yes               
+\end{tabular}%
 }
 \end{table}
 
