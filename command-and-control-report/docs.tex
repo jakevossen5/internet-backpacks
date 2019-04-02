@@ -209,6 +209,15 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 }
 \end{table}
 
+The other important validation is to ensure that the multithreading
+described in section 1 improves results. To simulate the enviorment
+this tool is expeted to be used in, I limited the numbers of cores my
+computer gave Python, as well as limit my internet speed using the
+Network Link Conditioner Tool[12]. I used the BSD command line utility
+\texttt{time}[13] to measure the runtime of the program. Below is a
+table describing the benefit from multiple cores based off the
+internet speed avaliable.
+
 \end{document}
 
 %[1] https://docs.python.org/3.7/library/multiprocessing.html
@@ -222,3 +231,5 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 %[9] https://docs.ipfs.io/introduction/install/
 %[10] https://tools.ietf.org/html/rfc4122.html
 %[11] https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+%[12] https://developer.apple.com/download/more/
+%[13] https://man.openbsd.org/time

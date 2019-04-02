@@ -9,7 +9,12 @@ import multiprocessing
 from multiprocessing import Pool
 
 def download_all_requests(requests):
-    with Pool(multiprocessing.cpu_count()) as p:
+    threads_count = multiprocessing.cpu_count()
+    # threads_count = 1
+    # threads_count = 2    
+    # threads_count = 4
+    # threads_count = 8
+    with Pool(threads_count) as p:
         p.map(download_request, requests)
     # The above code is the same as the code below, above will do it with as many threads as possible
     # for r in requests:
@@ -61,7 +66,7 @@ def main():
     requests.append(Request("URL", "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     requests.append(Request("URL", "https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     requests.append(Request("search", "What Is the Airspeed Velocity of an Unladen Swallow?", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
-    requests.append(Request("youtube", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+    requests.append(Request("youtube", "https://www.youtube.com/watch?v=NtrVwX1ncqk", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     requests.append(Request("ipfs", "/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
     requests.append(Request("ipfs", "/ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))    
     
