@@ -7,8 +7,10 @@ window = Tk()
 window.title("ORE-PACKAGERS")
 window.geometry('700x600')
 
+
 RequestListLength = 0;
 DownloadableListLength = 0;
+
 
 #downloadable function to be called by command and control
 def downloadable(item):
@@ -62,51 +64,58 @@ def removeDownloadableContent(item):
 #setup the first column, which will show the items that the
 #system already has, that can be downloaded
 
+mainFrame = Frame(window)
+mainFrame.pack(expand=True, fill= BOTH)
+
 #label
-colOne = Label(window, text="List of Downloadable items")
-colOne.grid(column=0, row=0, ipadx=20)
+leftFrame = Frame(mainFrame)
+leftFrame.pack(side=LEFT, padx = 20, fill = Y)
+colOne = Label(leftFrame, text="List of Downloadable items")
+colOne.pack(side=TOP)
 
 #list
-downloadableItems = Listbox(window)
-downloadableItems.grid(column=0, row=1)
+downloadableItems = Listbox(leftFrame)
+downloadableItems.pack(fill = Y, expand = True, pady = 10)
 
 #setup the second column, which will allow the user to input an item to be requested
-
+middleFrame = Frame(mainFrame)
+middleFrame.pack(side=LEFT, padx = 20, fill = Y, expand = True)
 #label
-colTwo = Label(window, text="Request an Item")
-colTwo.grid(column=1, row=0, ipadx=20)
+colTwo = Label(middleFrame, text="Request an Item")
+colTwo.pack(pady = 20)
 
 
 
 #textbox
-entryBox = Entry(window, width=30)
-entryBox.grid(column=1, row=1, ipadx=20)
+entryBox = Entry(middleFrame, width=30)
+entryBox.pack(pady=5)
 entryBox.bind('<Return>', requested)
 
 #type
-typeBox = Combobox(window)
+typeBox = Combobox(middleFrame)
 typeBox['values'] = ("URL","search","youtube","ipfs")
 typeBox.current(1)
-typeBox.grid(column=1, row=2, ipadx=20)
+typeBox.pack()
 
 #button
 
 
-requestButton = Button(window, text="Request")
+requestButton = Button(middleFrame, text="Request")
 requestButton.bind('<Button-1>', requested)
-requestButton.grid(column=1, row=3, ipadx=20)
+requestButton.pack(pady=5)
 
 
 
 #setup the third column, which will have the list of the items requested shown
-
+rightFrame = Frame(mainFrame)
+rightFrame.pack(side=RIGHT, padx = 20, fill = Y)
 #label
-colThree = Label(window, text="List of Requested items")
-colThree.grid(column=2, row=0, ipadx=20)
+colThree = Label(rightFrame, text="List of Requested items")
+colThree.pack()
 
 #list
-requestedItems = Listbox(window)
-requestedItems.grid(column=2, row=1)
+requestedItems = Listbox(rightFrame)
+requestedItems.pack(fill = Y, expand = True, pady = 10)
 requestedItems.bind('<Delete>', removeRequest)
 
 
