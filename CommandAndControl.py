@@ -60,6 +60,7 @@ def download_from_ipfs(ipfs_hash, path):
     mkdir(path)
     subprocess.call(r'ipfs get ' + ipfs_hash + ' -o ' + path, shell=True)
 def main():
+    #get_all_requests()
     requests = []
     # tests
     requests.append(Request("URL", "https://www.gutenberg.org/cache/epub/2265/pg2265.txt", user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
