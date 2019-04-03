@@ -1,4 +1,9 @@
 \documentclass{article}
+% Left align stuff
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[document]{ragged2e}
+% other stuff
 \usepackage{graphicx}
 \usepackage[margin=1in]{geometry}
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
@@ -210,13 +215,74 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 \end{table}
 
 The other important validation is to ensure that the multithreading
-described in section 1 improves results. To simulate the enviorment
-this tool is expeted to be used in, I limited the numbers of cores my
-computer gave Python, as well as limit my internet speed using the
-Network Link Conditioner Tool[12]. I used the BSD command line utility
-\texttt{time}[13] to measure the runtime of the program. Below is a
-table describing the benefit from multiple cores based off the
-internet speed avaliable.
+described in section 1 improves results. I ran the program with 8
+faily large requests and used the \texttt{time}[12] utility to measure
+the runtime of the program. The results are shown below:
+
+\begin{table}[H]
+\centering
+\caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed
+Jake Vossen, 2019-04-01 \endgroup}
+\label{my-label}
+% \resizebox{\textwidth}{!}{%\begin{table}[]
+\begin{tabular}{l|l|l|l}
+                                      1 Core  & 2 Cores & 4 Cores & 8
+                                                                    Cores
+  \\ \hline
+ 161.277 & 53.927  & 45.984  & 46.448 
+\end{tabular}
+% }
+\end{table}
+
+\section{Appendix}
+
+\section{Bibliography}
+
+[1] ``multiprocessing - Process-based parallelism,''
+\textit{multiprocessing - Process-based parallelism - Python 3.7.3
+  documentation}. [Online]. Available:
+\url{https://docs.python.org/3.7/library/multiprocessing.html}. [Accessed:
+03-Apr-2019].
+
+[2] ``Hardware Survey - CPU Cores,'' \textit{Hardware Survey - CPU Cores}. [Online]. Available: \url{https://www.pcbenchmarks.net/number-of-cpu-cores.html}. [Accessed: 03-Apr-2019]. 
+
+[3] ``Raspberry Pi 3 Model B,'' Raspberry Pi. [Online]. Available:
+\url{https://www.raspberrypi.org/products/raspberry-pi-3-model-b/}. [Accessed:
+03-Apr-2019].
+
+[4] ``GNU Wget 1.20 Manual,'' \textit{GNU Wget 1.20
+  Manual}. [Online]. Available:
+\url{https://www.gnu.org/software/wget/manual/wget.html}. [Accessed:
+03-Apr-2019].
+
+[5] MarioVilas, ``MarioVilas/googlesearch,'' GitHub,
+06-Mar-2019. [Online]. Available:
+\url{https://github.com/MarioVilas/googlesearch}. [Accessed:
+03-Apr-2019].
+
+[6] Ytdl-Org, ``ytdl-org/youtube-dl'' GitHub,
+03-Apr-2019. [Online]. Available:
+\url{https://github.com/ytdl-org/youtube-dl/}. [Accessed:
+03-Apr-2019].
+
+[7] ``IPFS is the Distributed Web'' IPFS. [Online]. Available:
+\url{https://ipfs.io/}. [Accessed: 03-Apr-2019].
+
+[8] ``Client-Server Mode,'' [Online]. Available:
+\url{https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf}. [Accessed:
+02-Apr-2019].
+
+[9] ``IPFS Documentation,'' \textit{Install IPFS – IPFS Documentation}. [Online]. Available: \url{https://docs.ipfs.io/introduction/install/}. [Accessed: 03-Apr-2019]. 
+
+[10] ``A Universally Unique IDentifier (UUID) URN Namespace,''
+\textit{IETF Tools}. [Online]. Available:
+\url{https://tools.ietf.org/html/rfc4122.html}. [Accessed:
+03-Apr-2019].
+
+[11] C. H. Romie, ``Secure Hash Standard (SHS)'' Aug-2015. [Online]. Available: \url{https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf}. [Accessed: 02-Apr-2019].
+
+[12] ``time,'' \textit{time(1) - OpenBSD manual pages}. [Online]. Available: https://man.openbsd.org/time. [Accessed: 03-Apr-2019].
+
 
 \end{document}
 
