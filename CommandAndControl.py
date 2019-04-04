@@ -48,7 +48,7 @@ def download_request(r):
 
 def download_from_url(url, path):
     mkdir(path)
-    subprocess.call(r'wget -E -H -k -K -p ' '-P ' + path + ' ' +  url + ' robots=off', shell=True)
+    subprocess.call(r'wget -E -H -k -K -p -P ' + path + ' ' +  url + ' robots=off ', shell=True)
 def download_from_youtube(url, path):
     mkdir(path)
     ydl_opts = {
