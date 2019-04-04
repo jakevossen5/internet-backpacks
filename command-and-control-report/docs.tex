@@ -78,27 +78,27 @@ The Command and Control subsystem is the subsystem responsible for
 converting the requests that have been collected into downloaded data
 to be distributed to users. It starts by receiving a list of
 \texttt{request} objects - a structure for containing information about
-each request. To prevent confusion, the mono-spaced \texttt{request}
+each request in Python. To prevent confusion, the mono-spaced \texttt{request}
 will refer to they Python object itself, whereas plain ``request''
 refers to the concept of a user request.
 
-With this list of requests, the first thing it does is use Pythons
+With this list of requests, the first thing it does is use the Python
 \texttt{multiprocessing}[1] library to split work up between the
 different threads on the computer. While this software is designed
 for low end machines to be more accessible to developing areas, most
 computers[2] in recent times will have more than 1 CPU core (including
 the Raspberry Pi[3]). This allows for the processor to split up all
 the requests, and execute them in parallel, instead of waiting for each
-one to finish individually, which can provide a large performance
-boost.
+one to finish individually, which can provide an decrease in time
+spent downloading files, as explored in section 4.2.
 
 When downloading a \texttt{request}, it determines the type of
 request. The types are URL, search, YouTube, and ipfs. It follows this
 flow chart to decide what to do:
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics[scale=.6]{log-flow-chart.png}
+  \includegraphics[scale=.5]{log-flow-chart.png}
   \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Diagram describing flow chart of downloading each
     \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
 \end{figure}
@@ -152,9 +152,11 @@ also used by other parts of the program.
 Sometimes the user will not know exactly what they want, so we added
 an option to get the first page of Google results (top 10
 results). The \texttt{googlesearch}[5] library was very helpful for
-this. This library provides a list of URLs, and then we use the URL
-method to download those results (or the YouTube download option if it
-is a YouTube link). The results are each in their own folder named
+this. This library provides a list of the URL's on the first page of a
+Google Search. With that list, we can use the established URL method
+to download them (it also checks to ensure to use the YouTube method
+if it is a YouTube link).
+The results are each in their own folder named
 based on the google search rank (1 is first result, 2 is second
 result, etc). 
 
@@ -164,36 +166,45 @@ It is well known that lot of quality educational and entertainment
 content is in video format, and the majority of that content is on
 YouTube. That is why we are adding functionality to request YouTube
 videos (through a link, or a result from the search function). In this
-case, the \texttt{youtube-dl} program allows for content retrieval.
+case, the \texttt{youtube-dl} program allows for content retrieval. A
+user can either request a YouTube video directly, or use the URL
+method which will detect the YouTube link and use this method.
 
 \subsection{IPFS}
 IPFS stands for ``InterPlanetary File System'', which is a ``A
 peer-to-peer hypermedia protocol to make the web faster, safer, and
 more open''[7]. The internet that is familiar to most people is the
 client-server model[8], but IPFS changes that so everyone is both a
-client and a server. Media is distributed based of their crytographic
+client and a server. Media is distributed based of the crytographic
 hash, a unique ID for each object instead of a URL. Anybody can add
 objects, and when requesting an object, it can be downloaded from any
 number of servers, not just the original person hosting the
 server. The \texttt{ipfs} command line utility[9] is used to retrieve
-objects.
+objects. This greatly expands the functionality of our product,
+because we can know do some content retrieval with no access to the
+internet. If two of these backpacks meet where there was no internet,
+they can easily exchange content on the IPFS, which could increase
+speed and cost of retrieval for those requests.
 
 \section{Interfaces with Other Subsystems}
 
-Software is all about abstraction, so there are a handful of points in
-which the Command and Control subsystem will interface with the other
+Software is all about abstraction, so it is important to clearly
+define where the Command and Control subsystem will interface with the other
 subsystems. Ideally, all the other subsystems will work independently
-and a couple of links will get everything working together.
+and a couple of links will get everything working together. The
+interfaces are left inside the Python code, just commented out with
+the \texttt{\#} character.
 
 \subsection{Input - List of Requests}
 
-Python only stores objects in memory while the program is
+Python, like all programming languages, only stores objects in memory while the program is
 running. That means when the program is shut down (or the machine is
 powered off), the data generated must be saved somewhere on the
 device or else that information would be lost. In this case, what is
 important is to be able to store the \texttt{request} objects. This is
 completed by the data management subsystem. This means my subsystem
 will call \texttt{get\_all\_requests()} which will retrieve the data
+from the hard drive of the machine
 about the requests, create the objects again (as they where destroyed
 from memory when the program shut down), and return that information
 to Command and Control.
@@ -235,19 +246,20 @@ implement this in the final project.
 
 \section{Validation}
 
+\subsection{File Retrieval}
 Testing is one of the most fundamentally important things in software
 development. It is easy to write code, but it is not useful if it
 can't work under a variety of difficult tests. A handful of curated
 tested designed to test the boundaries of the code have been
 picked. To verify the results, there are two primary methods. The
 first, is a SHA-512 sum, which is a crytographically secure way to
-ensure two files are the same[11]. The first file originally from a
+ensure two files are the same[11], the first file being originally from a
 manual download, and the second one from the Command and Control
-Subsystem. If the two hashes are the same, the subsystem was
+Subsystem Python program. If the two hashes are the same, the subsystem was
 successful. However, this cannot be used for all
 tests, because when downloading from a website, the original HTML files
 are modified for browsing offline (see the \texttt{-k} option on
-wget. This makes it impossible to cryptographically ensure that the
+wget). This makes it impossible to cryptographically ensure that the
 requested file is the same as the downloaded file, so a visual
 analysis is preformed to analyze the two documents and ensure that
 they are identical. The table below explains the tests preformed,
@@ -267,8 +279,13 @@ Type   & Value                                                                  
 URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of ``Hamlet" By Shakespeare                       & Hash            & Yes                \\ \hline
 URL    & https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf & PDF of Google Machine Learning Research Paper         & Hash            & Yes                \\ \hline
 URL    & https://en.wikipedia.org/wiki/Monty\_Python\_and\_the\_Holy\_Grail                        & Wikipedia entry for ``Monty Python and the Holy Grail" & Visual          & Yes                \\ \hline
-YouTube & https://www.youtube.com/watch?v=dQw4w9WgXcQ
-                                                                                                   & Rick Roll                                 & Visual          & Yes                \\ \hline
+YouTube & https://www.youtube.com/watch?v=Gbtulv0mnlU
+                                                                                                   &
+                                                                                                     NASA
+                                                                                                     Shuttle
+                                                                                                                                                           Recovery
+                                                                                                                                                           Video&
+                                                                                                                                                             Visual          & Yes                \\ \hline
 search & What Is the Airspeed Velocity of an Unladen Swallow?                                      & Google search results                                 & Visual          & Yes                \\ \hline
 ipfs   & /ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme                               & IPFS introduction document                            & Hash            & Yes                \\ \hline
 ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png                           & 300 MB picture of the moon                            & Hash            & Yes               
@@ -276,6 +293,8 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 }
 \end{table}
 
+\subsection{Multi threading}
+\label{multithreading}
 The other important validation is to ensure that the multi threading
 described in section 1 improves results. I ran the program with 8
 fairly large requests and used the \texttt{time}[12] utility to measure
@@ -283,7 +302,7 @@ the run time of the program. The results are shown below:
 
 \begin{table}[H]
 \centering
-\caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed
+\caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed,
 Jake Vossen, 2019-04-01 \endgroup}
 \label{my-label}
 % \resizebox{\textwidth}{!}{%\begin{table}[]
@@ -291,13 +310,20 @@ Jake Vossen, 2019-04-01 \endgroup}
                                       1 Core  & 2 Cores & 4 Cores & 8
                                                                     Cores
   \\ \hline
- 161.277 & 53.927  & 45.984  & 46.448 
+ 161.277 seconds & 53.927  seconds & 45.984  seconds & 46.448 seconds
 \end{tabular}
 % }
 \end{table}
+From this data, it is clear that the multi threading is
+successful in decreasing the time required to download multiple requests.
+Further work could be done to multi thread the \texttt{googlesearch}
+library, as the current multi threading solution does not support sub threads.
 
 \section{Appendix}
 
+Below is the source code for the the Command and Control
+Subsystem. This is worth a read through, as it contains important
+comments and references on interfaces with other subsystems.
 \pythonexternal{../CommandAndControl.py}
 
 \newpage
