@@ -77,23 +77,23 @@ breaklines=true
 The Command and Control subsystem is the subsystem responsible for
 converting the requests that have been collected into downloaded data
 to be distributed to users. It starts by receiving a list of
-\texttt{request} objects - a structure for contating information about
+\texttt{request} objects - a structure for containing information about
 each request. To prevent confusion, the mono-spaced \texttt{request}
-will refer to they Python object itself, wheras plain ``request''
+will refer to they Python object itself, whereas plain ``request''
 refers to the concept of a user request.
 
 With this list of requests, the first thing it does is use Pythons
 \texttt{multiprocessing}[1] library to split work up between the
 different threads on the computer. While this software is designed
-for low end machines to be more accessable to developing areas, most
+for low end machines to be more accessible to developing areas, most
 computers[2] in recent times will have more than 1 CPU core (including
 the Raspberry Pi[3]). This allows for the processor to split up all
-the requests, and execute them in paralel, instead of waiting for each
-one to finish individually, which can provide a large preformance
+the requests, and execute them in parallel, instead of waiting for each
+one to finish individually, which can provide a large performance
 boost.
 
-When downloading a \texttt{request}, it determens the type of
-request. The types are URL, search, youtube, and ipfs. It follows this
+When downloading a \texttt{request}, it determines the type of
+request. The types are URL, search, YouTube, and ipfs. It follows this
 flow chart to decide what to do:
 
 \begin{figure}[h]
@@ -117,7 +117,7 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
   robots=off} where \texttt{path} is the output directory and
 \texttt{url} is the url that has been requested. To break it down:
 \begin{itemize}
-  \item \texttt{-E} tells \texttt{wget} to change the file extention
+  \item \texttt{-E} tells \texttt{wget} to change the file extension
     if the url isn't a .html file. This allows for the downloading of
     PDF files as well as HTML files
   \item \texttt{-H} Tells \texttt{wget} that it is okay to download
@@ -128,7 +128,7 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
     when visited in a web browser
   \item \texttt{-k} This stands for ``convert links'', which means
     that when the download is complete, it converts the links on the
-    page so they are sudible for browsing on the local machine. For
+    page so they are suitable for browsing on the local machine. For
     example, if a blog has \texttt{otherwebsite.com/picture} on it, it
     will replace that with just \texttt{picture} to ensure that the
     browser will use the local versions of that picture
@@ -141,7 +141,7 @@ utility. Specifically, \texttt{wget -E -H -k -K -p -P path url
     \texttt{otherwebsite.com/picture}) also gets downloaded if it is
     linked in the requested url.
   \end{itemize}
-All of those options ensures that downloading the URL requested get's
+All of those options ensures that downloading the URL requested gets
 the website exactly as it appears in a browser, including linked
 images. Additionally, it works with PDF and ZIP files, which is really
 important to ensure all possible media can be obtained. This method is
@@ -153,63 +153,63 @@ Sometimes the user will not know exactly what they want, so we added
 an option to get the first page of Google results (top 10
 results). The \texttt{googlesearch}[5] library was very helpful for
 this. This library provides a list of URLs, and then we use the URL
-method to download those results (or the youtube download option if it
-is a youtube link). The results are each in thier own folder nammed
+method to download those results (or the YouTube download option if it
+is a YouTube link). The results are each in their own folder named
 based on the google search rank (1 is first result, 2 is second
 result, etc). 
 
 \subsection{YouTube}
 
-It is well known that lot of quality educational and entiertainment
+It is well known that lot of quality educational and entertainment
 content is in video format, and the majority of that content is on
-YouTube. That is why we are adding functionallity to request YouTube
+YouTube. That is why we are adding functionality to request YouTube
 videos (through a link, or a result from the search function). In this
-case, the \texttt{youtube-dl} program allows for content retrevial.
+case, the \texttt{youtube-dl} program allows for content retrieval.
 
 \subsection{IPFS}
 IPFS stands for ``InterPlanetary File System'', which is a ``A
 peer-to-peer hypermedia protocol to make the web faster, safer, and
 more open''[7]. The internet that is familiar to most people is the
 client-server model[8], but IPFS changes that so everyone is both a
-client and a server. Media is distribtued based of their crytographic
+client and a server. Media is distributed based of their crytographic
 hash, a unique ID for each object instead of a URL. Anybody can add
 objects, and when requesting an object, it can be downloaded from any
-number of servers, not just the origional person hosting the
-server. The \texttt{ipfs} command line utility[9] is used to retreive
+number of servers, not just the original person hosting the
+server. The \texttt{ipfs} command line utility[9] is used to retrieve
 objects.
 
 \section{Interfaces with Other Subsystems}
 
 Software is all about abstraction, so there are a handful of points in
 which the Command and Control subsystem will interface with the other
-subsystems. Ideally, all the other subsystems will work indepenedently
+subsystems. Ideally, all the other subsystems will work independently
 and a couple of links will get everything working together.
 
 \subsection{Input - List of Requests}
 
 Python only stores objects in memory while the program is
 running. That means when the program is shut down (or the machine is
-powered off), the data genereated must be saved somewhere on the
+powered off), the data generated must be saved somewhere on the
 device or else that information would be lost. In this case, what is
 important is to be able to store the \texttt{request} objects. This is
-completed by the data managment subsystem. This means my subsystem
-will call \texttt{get\_all\_requests()} which will retreive the data
+completed by the data management subsystem. This means my subsystem
+will call \texttt{get\_all\_requests()} which will retrieve the data
 about the requests, create the objects again (as they where destroyed
 from memory when the program shut down), and return that information
 to Command and Control.
 
 \subsection{Output - Download path and status}
 
-Once my subsystem completes it's donwload, it needs to update the
+Once my subsystem completes it's download, it needs to update the
 database about the new status. This is again through the Data
-Managment subsystem. To ensure we only download each object once, each
+Management subsystem. To ensure we only download each object once, each
 \texttt{request} has two properties: \texttt{file\_location} and
 \texttt{downloaded\_status}. Once Command and Control has completed a
-download, it will call the Data Managment method
+download, it will call the Data Management method
 \texttt{update\_request(r)} where \texttt{r} include the changes to
 \texttt{file\_location} and \texttt{downloaded\_status}. So the
-Data Managmnet subsystem knows which database entry to update, we use
-a Universily Uniquie Identifier (UUID)[10] to identify each
+Data Management subsystem knows which database entry to update, we use
+a Universally Unique Identifier (UUID)[10] to identify each
 request.
 
 \begin{figure}[h]
@@ -223,14 +223,14 @@ request.
 \section{Stakeholder Considerations}
 
 The primary concern for the Command and Control subsystem is ensuring
-that the primary forms of retrival are suported. In an interview with
+that the primary forms of retrieval are supported. In an interview with
 Anthony Wanjiru, who lived in Kenya for 35 years, he said the most
 important types of content are either a URL (either as a web page,
-pdf, etc), youtube, Google Searches, and while IPFS isn't widley used,
+pdf, etc), YouTube, Google Searches, and while IPFS isn't widely used,
 it has a lot of potential[13]. He also said that local content is on
 the rise, and a method to upload content would be really
-benificial. While this was not implemented at this time, due to
-specifics with intergrations with the other subsystems, we hope to
+beneficial. While this was not implemented at this time, due to
+specifics with integration with the other subsystems, we hope to
 implement this in the final project.
 
 \section{Validation}
@@ -238,18 +238,18 @@ implement this in the final project.
 Testing is one of the most fundamentally important things in software
 development. It is easy to write code, but it is not useful if it
 can't work under a variety of difficult tests. A handful of curated
-tested designed to test the bounderies of the code have been
+tested designed to test the boundaries of the code have been
 picked. To verify the results, there are two primary methods. The
 first, is a SHA-512 sum, which is a crytographically secure way to
-ensure two files are the same[11]. The first file origionatty from a
+ensure two files are the same[11]. The first file originally from a
 manual download, and the second one from the Command and Control
 Subsystem. If the two hashes are the same, the subsystem was
 successful. However, this cannot be used for all
-tests, because when downloading from a webiste, the origional HTML files
+tests, because when downloading from a website, the original HTML files
 are modified for browsing offline (see the \texttt{-k} option on
 wget. This makes it impossible to cryptographically ensure that the
-requested file is thhe same as the downloaded file, so a visual
-analysis is preformed to analize the two documents and ensure that
+requested file is the same as the downloaded file, so a visual
+analysis is preformed to analyze the two documents and ensure that
 they are identical. The table below explains the tests preformed,
 where the ``Analysis Method'' is either visual or hash to preform the
 check. 
@@ -264,10 +264,10 @@ Jake Vossen, 2019-04-01 \endgroup}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l|l|l|l|l}
 Type   & Value                                                                                     & Expected Result                                       & Analysis Method & Expected = Actual? \\ \hline
-URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of ``Hamlet" By Shakesphere                       & Hash            & Yes                \\ \hline
+URL    & https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                      & Text of ``Hamlet" By Shakespeare                       & Hash            & Yes                \\ \hline
 URL    & https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf & PDF of Google Machine Learning Research Paper         & Hash            & Yes                \\ \hline
 URL    & https://en.wikipedia.org/wiki/Monty\_Python\_and\_the\_Holy\_Grail                        & Wikipedia entry for ``Monty Python and the Holy Grail" & Visual          & Yes                \\ \hline
-youtube & https://www.youtube.com/watch?v=dQw4w9WgXcQ
+YouTube & https://www.youtube.com/watch?v=dQw4w9WgXcQ
                                                                                                    & Rick Roll                                 & Visual          & Yes                \\ \hline
 search & What Is the Airspeed Velocity of an Unladen Swallow?                                      & Google search results                                 & Visual          & Yes                \\ \hline
 ipfs   & /ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme                               & IPFS introduction document                            & Hash            & Yes                \\ \hline
@@ -276,10 +276,10 @@ ipfs   & /ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png        
 }
 \end{table}
 
-The other important validation is to ensure that the multithreading
+The other important validation is to ensure that the multi threading
 described in section 1 improves results. I ran the program with 8
-faily large requests and used the \texttt{time}[12] utility to measure
-the runtime of the program. The results are shown below:
+fairly large requests and used the \texttt{time}[12] utility to measure
+the run time of the program. The results are shown below:
 
 \begin{table}[H]
 \centering
