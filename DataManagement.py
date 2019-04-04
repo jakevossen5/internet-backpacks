@@ -15,7 +15,7 @@ def connect():
         host="127.0.0.1",  # depends on host
         database="internetdata",
         user="postgres",
-        password="",
+        password="uD4ph2stu",
         port="5432"
     )
 
@@ -28,8 +28,8 @@ def add_request(kind, value, user):
     now = datetime.datetime.now()
     # create a request object and add data to database
     user_request.__init__(kind, value, user, now)
-    cursor.execute("INSERT INTO requests (\"UUID\", \"User ID\", \"Kind\", \"Value\", \"Download Status\", \"Date\")"
-                   "VALUES (%s, %s, %s, %s, \'False\', %s)",
+    cursor.execute("INSERT INTO requests (\"UUID\", \"User ID\", \"Kind\", \"Value\", \"Download Status\", "
+                   "\"Date\") VALUES (%s, %s, %s, %s, \'False\', %s)",
                    (user_request.uuid, user_request.user.ID, user_request.kind, user_request.value, now))
     # make changes and close the cursor
     connection.commit()
@@ -55,7 +55,8 @@ def update_request(current_request, status, location):
     current_request.set_file_location(location)
     cursor = connection.cursor()
     cursor.execute(f"UPDATE requests SET \"Download Status\" = \'{current_request.downloaded_status}\', "
-                   f"\"File Location\" = \'{current_request.file_location}\' WHERE \"UUID\" = \'{current_request.uuid}\'")
+                   f"\"File Location\" = \'{current_request.file_location}\' WHERE \"UUID\" = "
+                   f"\'{current_request.uuid}\'")
     connection.commit()
     cursor.close()
     connection.close()
@@ -63,21 +64,33 @@ def update_request(current_request, status, location):
 
 # I added this function
 # This creates a new user from the user object and inserts the data into the users table
-# postgreSQL throws an error if a username is already taken so I didn't add anther check here for now
 def new_user(first_name, last_name, username, password):
     global hash
     connect()
     cursor = connection.cursor()
-    # password is hashed
-    hash = pbkdf2_sha256.encrypt(password)
-    current_user = user(first_name, last_name, username, hash)
-    # first name, last name, and username converted to lowercase so logging in is not case sensitive
-    cursor.execute(f"INSERT INTO users (\"ID\", \"First Name\", \"Last Name\", \"Username\", \"Password\") "
-                   f"VALUES (\'{current_user.ID}\', \'{current_user.first_name.lower()}\', "
-                   f"\'{current_user.last_name.lower()}\', \'{current_user.username.lower()}\', \'{current_user.password}\')")
-    connection.commit()
-    cursor.close()
-    connection.close()
+    usernameAvailable = True
+    cursor.execute("SELECT * FROM users")
+    rows = cursor.fetchall()
+    for r in rows:
+        if r[3] == username.lower():
+            usernameAvailable = False
+    if usernameAvailable:
+        # password is hashed
+        hash = pbkdf2_sha256.encrypt(password)
+        current_user = user(first_name, last_name, username, hash)
+        # first name, last name, and username converted to lowercase so logging in is not case sensitive
+        cursor.execute(f"INSERT INTO users (\"ID\", \"First Name\", \"Last Name\", \"Username\", \"Password\") "
+                       f"VALUES (\'{current_user.ID}\', \'{current_user.first_name.lower()}\', "
+                       f"\'{current_user.last_name.lower()}\', \'{current_user.username.lower()}\', "
+                       f"\'{current_user.password}\')")
+        connection.commit()
+        cursor.close()
+        connection.close()
+        return True
+    else:
+        cursor.close()
+        connection.close()
+        return False
 
 
 # I added this function
@@ -86,18 +99,31 @@ def new_user(first_name, last_name, username, password):
 def login(username, password):
     connect()
     cursor = connection.cursor()
-    # entered username is converted to lower case to match what is in the database
-    cursor.execute(f"SELECT * FROM users WHERE \"Username\" = \'{username.lower()}\'")
+
+    userExists = False
+    cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()
-    hash = rows[0][4]
-    cursor.close()
-    connection.close()
-    # the entered password is compared to the database password using the hash and encryption algorithm
-    if pbkdf2_sha256.verify(password, hash):
-        ID = str(rows[0][0])
-        create_user_object(ID)
-        return True
+    for r in rows:
+        if r[3] == username.lower():
+            userExists = True
+
+    if userExists:
+        # entered username is converted to lower case to match what is in the database
+        cursor.execute(f"SELECT * FROM users WHERE \"Username\" = \'{username.lower()}\'")
+        rows = cursor.fetchall()
+        hash = rows[0][4]
+        cursor.close()
+        connection.close()
+        # the entered password is compared to the database password using the hash and encryption algorithm
+        if pbkdf2_sha256.verify(password, hash):
+            ID = str(rows[0][0])
+            create_user_object(ID)
+            return True
+        else:
+            return False
     else:
+        cursor.close()
+        connection.close()
         return False
 
 

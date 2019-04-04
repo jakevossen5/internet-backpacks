@@ -33,7 +33,14 @@ def new_user_test():
     last_name = input("Last Name: ")
     username = input("Username: ")
     password = input("Password: ")
-    new_user(first_name, last_name, username, password)
+    usernameAvailable = new_user(first_name, last_name, username, password)
+    while not usernameAvailable:
+        print("That username is taken please choose another.")
+        username = input("Username: ")
+        password = input("Password: ")
+        usernameAvailable = new_user(first_name, last_name, username, password)
+        if usernameAvailable:
+            break
 
 
 # login test
@@ -45,7 +52,7 @@ def login_test():
     login_success = login(username, password)
 
     while not login_success:
-        print("Incorrect Password. Try Again.")
+        print("Incorrect Username or Password. Try Again.")
         username = input("Username: ")
         password = input("Password: ")
         login_success = login(username, password)
@@ -83,7 +90,6 @@ add_request_test()
 get_all_requests_test()
 update_request_test()
 get_all_requests_test()
-print_user_table()
 new_user_test()
 print_user_table()
 
@@ -97,11 +103,14 @@ Username: Willlynx
 Password: pa$$word
 User Table: 
 (ID, First Name, Last Name, Username, Password)
-('7e12e697-d7fc-43b8-bd51-9d1825a3eead', 'william', 'culver', 'willlynx', '$pbkdf2-sha256$29000$.1/L.f/fe29tjbF2zhkDAA$OzfEyFc9521q8JMf.tV5fR6g6XLjtCE/sm1JHJ4n7aA')
+('36c984dc-5b3d-4733-9c20-b638765b7657', 'william', 'culver', 'willlynx', '$pbkdf2-sha256$29000$E4IQwjiHUEpJae0do9Qaww$xBDNUFsX3G6yVnNlsqpTZzPp0YQ26cCZxWnKqBv3PZg')
 Login Test: 
 Username: willlynx
 Password: password
-Incorrect Password. Try Again.
+Incorrect Username or Password. Try Again.
+Username: will
+Password: pa$$word
+Incorrect Username or Password. Try Again.
 Username: willlynx
 Password: pa$$word
 Login Success
@@ -110,22 +119,22 @@ Kind: URL
 Value: https://www.google.com
 Get All Requests Test: 
 (UUID, User ID, Kind, Value, Download Status, File Location, Date)
-('a38844ef-4dd0-40c2-b831-69148b19b1ed', '7e12e697-d7fc-43b8-bd51-9d1825a3eead', 'URL', 'https://www.google.com', 'False', None, datetime.datetime(2019, 3, 31, 15, 50, 3, 353700))
+('4a9d96e8-3ec4-40cc-983a-bd92bc05fab9', '36c984dc-5b3d-4733-9c20-b638765b7657', 'URL', 'https://www.google.com', 'False', None, datetime.datetime(2019, 4, 2, 19, 55, 42, 785000))
 Update Request Test: 
 Done
 Get All Requests Test: 
 (UUID, User ID, Kind, Value, Download Status, File Location, Date)
-('a38844ef-4dd0-40c2-b831-69148b19b1ed', '7e12e697-d7fc-43b8-bd51-9d1825a3eead', 'URL', 'https://www.google.com', 'True', 'C:\\\\Users\\william\\Downloads\\File1', datetime.datetime(2019, 3, 31, 15, 50, 3, 353700))
-User Table: 
-(ID, First Name, Last Name, Username, Password)
-('7e12e697-d7fc-43b8-bd51-9d1825a3eead', 'william', 'culver', 'willlynx', '$pbkdf2-sha256$29000$.1/L.f/fe29tjbF2zhkDAA$OzfEyFc9521q8JMf.tV5fR6g6XLjtCE/sm1JHJ4n7aA')
+('4a9d96e8-3ec4-40cc-983a-bd92bc05fab9', '36c984dc-5b3d-4733-9c20-b638765b7657', 'URL', 'https://www.google.com', 'True', 'C:\\\\Users\\william\\Downloads\\File1', datetime.datetime(2019, 4, 2, 19, 55, 42, 785000))
 New User Test: 
-First Name: Billy
-Last Name: Bob
-Username: bBob1
-Password: wordpass
+First Name: 
+Last Name: 
+Username: Willlynx
+Password: pass
+That username is taken please choose another.
+Username: BillyBob
+Password: pass
 User Table: 
 (ID, First Name, Last Name, Username, Password)
-('7e12e697-d7fc-43b8-bd51-9d1825a3eead', 'william', 'culver', 'willlynx', '$pbkdf2-sha256$29000$.1/L.f/fe29tjbF2zhkDAA$OzfEyFc9521q8JMf.tV5fR6g6XLjtCE/sm1JHJ4n7aA')
-('3b7dfc34-08d4-43be-9d6b-1dcb54b92849', 'billy', 'bob', 'bbob1', '$pbkdf2-sha256$29000$F8L4P.ecc84ZwzjHmLNWCg$q7e8zgEhcPqsVR.6Kd005tERzD2L7tEvRbZ3l8socaI')
+('6f2f477a-e7c7-4fca-bec4-414ba0d0b579', 'william', 'culver', 'willlynx', '$pbkdf2-sha256$29000$0tq7N2ZsjdEag1AKoTTG2A$GHUQSW5Hd9SvTSmI3flnCCqa924ftCI9iCufSsh1gKg')
+('a9be6453-5d34-4599-bb7e-8e44c52fbb2e', '', '', 'billybob', '$pbkdf2-sha256$29000$vdeac661thYixLhXqlVqDQ$zHziXsJVwLDsPdo25FQmy3V6UiFqG4XQr5Sccy0qr70')
 '''
