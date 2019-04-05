@@ -5,7 +5,7 @@
 \usepackage[document]{ragged2e}
 % other stuff
 \usepackage{graphicx}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=.75in]{geometry}
 \PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
@@ -195,6 +195,9 @@ and a couple of links will get everything working together. The
 interfaces are left inside the Python code, just commented out with
 the \texttt{\#} character.
 
+Most of the meshing is done through the \texttt{request} object, which
+can be found in the appendix.
+
 \subsection{Input - List of Requests}
 
 Python, like all programming languages, only stores objects in memory while the program is
@@ -243,6 +246,13 @@ the rise, and a method to upload content would be really
 beneficial. While this was not implemented at this time, due to
 specifics with integration with the other subsystems, we hope to
 implement this in the final project.
+
+\subsection{Pricing}
+
+Due to the emphasis of using our system in low income areas, all
+software that is used in this process is free to use and
+distribute. This optimizes the number of people that can use this
+software. 
 
 \section{Validation}
 
@@ -318,13 +328,36 @@ From this data, it is clear that the multi threading is
 successful in decreasing the time required to download multiple requests.
 Further work could be done to multi thread the \texttt{googlesearch}
 library, as the current multi threading solution does not support sub threads.
+\section{Idea Generation / Software Choices and Requirements}
+
+Below is the reasoning for each software library and tool picked. It
+also acts as a requirements list
+
+\begin{itemize}
+  \item Python - Easy for beginners to understand, has a lot of
+    libraries, powerful
+  \item \texttt{googlesearch} - It is really difficult to parse the
+    URLs and submit a search to Google through plain HTTP requests,
+    and this library takes care of this as well as providing updates
+    if the format changes in the future.
+  \item \texttt{youtube\_dl} - Written in Python, does exactly what is
+    needed, and also supports sites that aren't YouTube
+  \item \texttt{wget} - Open source, widely used, and can create a
+    snapshot as the website exactly appears, instead of just the file
+    at the specific URL.
+  \item IPFS - Allows for the decentralization of content and therefor
+    increases download speed
+\end{itemize}
+
+
 
 \section{Appendix}
 
-Below is the source code for the the Command and Control
-Subsystem. This is worth a read through, as it contains important
-comments and references on interfaces with other subsystems.
+\subsection{Command and Control Python Program}
 \pythonexternal{../CommandAndControl.py}
+
+\subsection{\texttt{Request} Object}
+\pythonexternal{../request.py}
 
 \newpage
 \section{Bibliography}
