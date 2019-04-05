@@ -10,6 +10,8 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{listings}
+\floatstyle{plaintop}
+\restylefloat{table}
 % \lstset{
 % basicstyle=\small\ttfamily,
 % columns=flexible,
@@ -99,7 +101,7 @@ flow chart to decide what to do:
 \begin{figure}[H]
   \centering
   \includegraphics[scale=.5]{log-flow-chart.png}
-  \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Diagram describing flow chart of downloading each
+  \caption{\begingroup \fontsize{10pt}{10pt}\selectfont Diagram describing flow chart of downloading each
     \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
 \end{figure}
 
@@ -149,11 +151,11 @@ also used by other parts of the program.
 
 \subsection{Search}
 
-Sometimes the user will not know exactly what they want, so we added
-an option to get the first page of Google results (top 10
+Sometimes the user will not know exactly what they want, so
+functionally was added to get the first page of Google search results (top 10
 results). The \texttt{googlesearch}[5] library was very helpful for
 this. This library provides a list of the URL's on the first page of a
-Google Search. With that list, we can use the established URL method
+Google Search. With that list, the established URL method is used
 to download them (it also checks to ensure to use the YouTube method
 if it is a YouTube link).
 The results are each in their own folder named
@@ -164,7 +166,7 @@ result, etc).
 
 It is well known that lot of quality educational and entertainment
 content is in video format, and the majority of that content is on
-YouTube. That is why we are adding functionality to request YouTube
+YouTube. That is why the users can request YouTube
 videos (through a link, or a result from the search function). In this
 case, the \texttt{youtube-dl} program allows for content retrieval. A
 user can either request a YouTube video directly, or use the URL
@@ -181,7 +183,7 @@ objects, and when requesting an object, it can be downloaded from any
 number of servers, not just the original person hosting the
 server. The \texttt{ipfs} command line utility[9] is used to retrieve
 objects. This greatly expands the functionality of our product,
-because we can know do some content retrieval with no access to the
+because the operator can know do some content retrieval with no access to the
 internet. If two of these backpacks meet where there was no internet,
 they can easily exchange content on the IPFS, which could increase
 speed and cost of retrieval for those requests.
@@ -216,20 +218,20 @@ to Command and Control.
 
 Once my subsystem completes it's download, it needs to update the
 database about the new status. This is again through the Data
-Management subsystem. To ensure we only download each object once, each
+Management subsystem. To ensure each object is downloaded only once, each
 \texttt{request} has two properties: \texttt{file\_location} and
 \texttt{downloaded\_status}. Once Command and Control has completed a
 download, it will call the Data Management method
 \texttt{update\_request(r)} where \texttt{r} include the changes to
 \texttt{file\_location} and \texttt{downloaded\_status}. So the
-Data Management subsystem knows which database entry to update, we use
-a Universally Unique Identifier (UUID)[10] to identify each
+Data Management subsystem knows which database entry to update,
+a Universally Unique Identifier (UUID)[10] is used to identify each
 request.
 
 \begin{figure}[h]
   \centering
   \includegraphics[scale=.5]{input-output.png}
-  \caption{\begingroup \fontsize{10pt}{12pt}\selectfont Diagram
+  \caption{\begingroup \fontsize{10pt}{10pt}\selectfont Diagram
     describing the inputs and outputs of the Command and Control sub-system
     \texttt{request}. Jake Vossen, 2019-04-01 \endgroup}
 \end{figure}
@@ -244,8 +246,8 @@ pdf, etc), YouTube, Google Searches, and while IPFS isn't widely used,
 it has a lot of potential[13]. He also said that local content is on
 the rise, and a method to upload content would be really
 beneficial. While this was not implemented at this time, due to
-specifics with integration with the other subsystems, we hope to
-implement this in the final project.
+specifics with integration with the other subsystems, this will have
+to be implemented later
 
 \subsection{Pricing}
 
@@ -280,7 +282,7 @@ check.
 % \usepackage{graphicx}
 \begin{table}[H]
 \centering
-\caption{\begingroup \fontsize{10pt}{12pt}\selectfont Tests Preformed
+\caption{\begingroup \fontsize{10pt}{12pt}\selectfont File Download Tests Preformed,
 Jake Vossen, 2019-04-01 \endgroup}
 \label{my-label}
 \resizebox{\textwidth}{!}{%
