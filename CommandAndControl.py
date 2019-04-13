@@ -17,6 +17,7 @@ def download_all_requests(requests):
     # threads_count = 8
     with Pool(threads_count) as p:
         p.map(download_request, requests)
+    subprocess.call(r'cd output; for i in */; do zip -r "${i%/}.zip" "$i"; done', shell=True)
     # The above code is the same as the code below, above will do it with as many threads as possible
     # for r in requests:
         # download_request(r)
@@ -45,6 +46,7 @@ def download_request(r):
     if r.kind == "ipfs":
         path = "output/" + r.uuid + '/'
         download_from_ipfs(r.value, path)
+    r.set_file_location(path)
 
     # mark_as_downloaded(p) # this is where this function will intergrate with data managment to update the file location and downlaoded status
 
