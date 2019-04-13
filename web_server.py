@@ -28,8 +28,11 @@ def hello():
         print (name, " ", email)
  
     if form.validate():
-# Save the comment here.
-        flash('Thanks for registration ' + name)
+        r = Request(name, email, user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now())
+        requests.append(r)
+        # CommandAndControl.download_all_requests(requests)
+        flash('Thanks for registration, your receipt is ' + r.uuid)
+
     else:
         flash('Error: All the form fields are required. ')
  
