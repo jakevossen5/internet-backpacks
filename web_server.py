@@ -1,6 +1,9 @@
 from flask import Flask, render_template, flash, request
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
-import CommandAndControl 
+import CommandAndControl
+from request import Request
+from user import user
+from datetime import datetime
 # App config.
 DEBUG = True
 app = Flask(__name__)
@@ -43,6 +46,9 @@ def googleresearch():
     if form.validate():
 # Save the comment here.
         flash('Thanks for registration ' + name)
+        requests = []
+        requests.append(Request(name, email, user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now()))
+        CommandAndControl.download_all_requests(requests)
 
         
     else:
