@@ -7,17 +7,18 @@ from datetime import datetime
 
 # App config.
 DEBUG = True
-app = Flask(__name__)
-app.config.from_object(__name__)
-app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
+application = Flask(__name__)
+application.config.from_object(__name__)
+application.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
 requests = []
- 
+
+
 class ReusableForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     email = TextField('Email:')#, validators=[validators.required(), validators.Length(min=6, max=35)])
     # password = TextField('Password:', validators=[True])
  
-@app.route("/", methods=['GET', 'POST'])
+@application.route("/", methods=['GET', 'POST'])
 def hello():
     form = ReusableForm(request.form)
  
@@ -38,7 +39,7 @@ def hello():
  
     return render_template('hello.html', form=form)
 
-@app.route("/get-my-request", methods=['GET', 'POST'])
+@application.route("/get-my-request", methods=['GET', 'POST'])
 def getmyrequest():
     form = ReusableForm(request.form)
  
@@ -59,7 +60,7 @@ def getmyrequest():
         
     return render_template('get-my-request.html', form=form) 
 
-@app.route("/google-research", methods=['GET', 'POST'])
+@application.route("/google-research", methods=['GET', 'POST'])
 def googleresearch():
     form = ReusableForm(request.form)
  
@@ -83,10 +84,11 @@ def googleresearch():
         
     return render_template('research.html', form=form) 
 
-@app.route("/download", methods=['GET', 'POST'])
+@application.route("/download", methods=['GET', 'POST'])
 def download_requests():
     CommandAndControl.download_all_requests(requests)
     return render_template('download.html') 
 
 if __name__ == "__main__":
-    app.run()
+    application.debug = True
+    application.run(host='0.0.0.0')
