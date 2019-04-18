@@ -55,8 +55,8 @@ def getmyrequest():
             if r.uuid == name:
                 print("should be getting it")
                 return send_file('output/' + r.uuid + '.zip', as_attachment=True)
-    else:
-        flash('Error: All the form fields are required. ')
+    # else:
+        # flash('Error: All the form fields are required. ')
         
     return render_template('get-my-request.html', form=form) 
 
