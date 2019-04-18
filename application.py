@@ -4,6 +4,7 @@ import CommandAndControl
 from request import Request
 from user import user
 from datetime import datetime
+from pathlib import Path
 
 # App config.
 DEBUG = True
@@ -54,7 +55,11 @@ def getmyrequest():
         for r in requests:
             if r.uuid == name:
                 print("should be getting it")
-                return send_file('output/' + r.uuid + '.zip', as_attachment=True)
+                if Path('output/' + r.uuid + '.zip').is_file():
+                    return send_file('output/' + r.uuid + '.zip', as_attachment=True)
+                else:
+                    print("File does not exist")
+                    flash('File has not been downloaded yet: ' + r.uuid)
     # else:
         # flash('Error: All the form fields are required. ')
         
