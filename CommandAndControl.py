@@ -27,6 +27,8 @@ def mkdir(path): #mkdir = Make Director, creates a folder if it does not exist
         os.makedirs(path)
         
 def download_request(r):
+    if r.downloaded_status:
+        return
     if r.kind == "URL": # we are dealing with a plain old HTTP request
         url = r.value
         path = "output/" + r.uuid
@@ -47,6 +49,7 @@ def download_request(r):
         path = "output/" + r.uuid + '/'
         download_from_ipfs(r.value, path)
     r.set_file_location(path)
+    r.set_downloaded_status(True)
 
     # mark_as_downloaded(p) # this is where this function will intergrate with data managment to update the file location and downlaoded status
 

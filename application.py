@@ -19,7 +19,7 @@ class ReusableForm(Form):
     # password = TextField('Password:', validators=[True])
  
 @application.route("/", methods=['GET', 'POST'])
-def hello():
+def submit_gen_request():
     form = ReusableForm(request.form)
  
     print (form.errors)
@@ -32,10 +32,10 @@ def hello():
         r = Request(name, email, user("Jake", "Vossen", "jakevossen", "asdf"), datetime.now())
         requests.append(r)
         # CommandAndControl.download_all_requests(requests)
-        flash('Thanks for registration, your receipt is ' + r.uuid)
+        flash('Thanks for the submission, your receipt is ' + r.uuid)
 
-    else:
-        flash('Error: All the form fields are required. ')
+    # else:
+        # flash('Error: All the form fields are required. ')
  
     return render_template('hello.html', form=form)
 
@@ -87,6 +87,7 @@ def googleresearch():
 @application.route("/download", methods=['GET', 'POST'])
 def download_requests():
     CommandAndControl.download_all_requests(requests)
+    # requests = []
     return render_template('download.html') 
 
 if __name__ == "__main__":
