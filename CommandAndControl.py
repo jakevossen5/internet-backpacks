@@ -60,7 +60,7 @@ def download_from_url(url, path):
 def download_from_youtube(url, path):
     mkdir(path)
     ydl_opts = {
-        'outtmpl': path + '%(title)s' # add title to file name
+        'outtmpl': path + '%(title)s' + '.mkv' # add title to file name
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
