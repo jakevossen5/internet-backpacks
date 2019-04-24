@@ -3,14 +3,15 @@ from wtforms import Form, TextField, TextAreaField, validators, StringField, Sub
 import CommandAndControl
 from request import Request
 from user import user
+import uuid
 from datetime import datetime
 from pathlib import Path
-
+import subprocess
 # App config.
 DEBUG = True
 application = Flask(__name__)
 application.config.from_object(__name__)
-application.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
+application.config['SECRET_KEY'] = '7d451f27d441f27567d441f2b6176a'
 requests = []
 
 
@@ -40,6 +41,7 @@ def submit_gen_request():
  
     return render_template('hello.html', form=form)
 
+
 @application.route("/get-my-request", methods=['GET', 'POST'])
 def getmyrequest():
     form = ReusableForm(request.form)
@@ -50,16 +52,29 @@ def getmyrequest():
         print (name, " ")
  
     if form.validate():
-# Save the comment here.
-        print("we in bois")
-        for r in requests:
-            if r.uuid == name:
-                print("should be getting it")
-                if Path('output/' + r.uuid + '.zip').is_file():
-                    return send_file('output/' + r.uuid + '.zip', as_attachment=True)
-                else:
-                    print("File does not exist")
-                    flash('File has not been downloaded yet: ' + r.uuid)
+        space_seperated_ids = ""
+        for input_uuid in name.split(','):
+            print("input uuid: ", input_uuid)
+            space_seperated_ids += input_uuid + " "
+            
+        space_seperated_ids = space_seperated_ids[:-1]
+        print(space_seperated_ids)
+        return_id = str(uuid.uuid4())
+        # subprocess.call(r'pwd')
+        subprocess.call(r'cd output; zip -r ' + return_id + '.zip ' + space_seperated_ids, shell=True)
+        return send_file('output/' + return_id + '.zip', as_attachment=True)
+        
+            # for r in requests:
+            #     print("r.uuid:", r.uuid)
+            #     if r.uuid == input_uuid:
+            #         print("Should be sending a file")
+            #         if Path('output/' + input_uuid + '.zip').is_file():
+            #             print("sending file")
+            #             return send_file('output/' + input_uuid + '.zip', as_attachment=True)
+            #         else:
+            #             print("File does not exist")
+            #             flash('File has not been downloaded yet: ' + input_uuid)
+            #         # send_my_file(input_uuid)
     # else:
         # flash('Error: All the form fields are required. ')
         
@@ -97,4 +112,4 @@ def download_requests():
 
 if __name__ == "__main__":
     application.debug = True
-    application.run(host='0.0.0.0')
+    application.run()
