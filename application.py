@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 import subprocess
+import os
 # App config.
 DEBUG = True
 application = Flask(__name__)
@@ -55,29 +56,16 @@ def getmyrequest():
         space_seperated_ids = ""
         for input_uuid in name.split(','):
             print("input uuid: ", input_uuid)
-            space_seperated_ids += input_uuid + " "
+            if os.path.isdir("output/" + input_uuid): # only add the elements that have been downloaded
+                space_seperated_ids += input_uuid + " "
             
-        space_seperated_ids = space_seperated_ids[:-1]
+        space_seperated_ids = space_seperated_ids[:-1] # remove final charachter
         print(space_seperated_ids)
         return_id = str(uuid.uuid4())
         # subprocess.call(r'pwd')
         subprocess.call(r'cd output; zip -r ' + return_id + '.zip ' + space_seperated_ids, shell=True)
         return send_file('output/' + return_id + '.zip', as_attachment=True)
-        
-            # for r in requests:
-            #     print("r.uuid:", r.uuid)
-            #     if r.uuid == input_uuid:
-            #         print("Should be sending a file")
-            #         if Path('output/' + input_uuid + '.zip').is_file():
-            #             print("sending file")
-            #             return send_file('output/' + input_uuid + '.zip', as_attachment=True)
-            #         else:
-            #             print("File does not exist")
-            #             flash('File has not been downloaded yet: ' + input_uuid)
-            #         # send_my_file(input_uuid)
-    # else:
-        # flash('Error: All the form fields are required. ')
-        
+    
     return render_template('get-my-request.html', form=form) 
 
 @application.route("/google-research", methods=['GET', 'POST'])

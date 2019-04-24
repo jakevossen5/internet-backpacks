@@ -18,8 +18,8 @@ def download_all_requests(requests):
     # threads_count = 8
     with Pool(threads_count) as p:
         p.map(download_request, requests)
-    subprocess.call(r'cd output; for i in */; do zip -r "${i%/}.zip" "$i"; done', shell=True)
     # The above code is the same as the code below, above will do it with as many threads as possible
+
     # for r in requests:
         # download_request(r)
 
