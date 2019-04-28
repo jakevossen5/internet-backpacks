@@ -1,0 +1,2946 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title>Command and Control Subsystems Report</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<!-- html --> 
+<meta name="src" content="docs.tex"> 
+<link rel="stylesheet" type="text/css" href="docs.css"> 
+</head><body 
+>
+<div class="maketitle">
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                                
+
+<h2 class="titleHead">Command and Control Subsystems Report</h2>
+<div class="author" ><span 
+class="cmr-12">Jake Vossen: OREPACKAGERS</span></div><br />
+<div class="date" ><span 
+class="cmr-12">April 28, 2019</span></div>
+</div>
+<h3 class="sectionHead"><span class="titlemark">1   </span> <a 
+ id="x1-10001"></a>Subsystem Description</h3>
+<!--l. 80--><p class="noindent" >The Command and Control subsystem is the subsystem responsible for converting the requests that have been collected into
+downloaded data to be distributed to users. It starts by receiving a list of <span 
+class="cmtt-10">request </span>objects - a structure for containing
+information about each request in Python. To prevent confusion, the mono-spaced <span 
+class="cmtt-10">request </span>will refer to they Python object
+itself, whereas plain &#8220;request&#8221; refers to the concept of a user request.
+<!--l. 88--><p class="noindent" >With this list of requests, the first thing it does is use the Python <span 
+class="cmtt-10">multiprocessing</span>[1] library to split work up between the
+different threads on the computer. While this software is designed for low end machines to be more accessible to developing
+areas, most computers[2] in recent times will have more than 1 CPU core (including the Raspberry Pi[3]). This allows
+for the processor to split up all the requests, and execute them in parallel, instead of waiting for each one
+to finish individually, which can provide an decrease in time spent downloading files, as explored in section
+4.2.
+<!--l. 98--><p class="noindent" >When downloading a <span 
+class="cmtt-10">request</span>, it determines the type of request. The types are URL, search, YouTube, and ipfs. Figure 1 is
+the flow chart to determine the method used for downloading an asset.
+<!--l. 102--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                                
+                                                                                                
+<a 
+ id="x1-1001r1"></a>
+                                                                                                
+                                                                                                
+<!--l. 104--><p class="noindent" ><img 
+src="log-flow-chart.png" alt="PIC"  
+>
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;1: </span><span  
+class="content">Diagram describing flow chart of downloading each <span 
+class="cmtt-10">request</span>. Jake Vossen, 2019-04-01 </span></div><!--tex4ht:label?: x1-1001r1 -->
+                                                                                                
+                                                                                                
+<!--l. 108--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 110--><p class="noindent" >The steps for each type of request is outlined below.
+<h4 class="subsectionHead"><span class="titlemark">1.1   </span> <a 
+ id="x1-20001.1"></a>URLs</h4>
+<!--l. 114--><p class="noindent" >URLs are your basic websites, such as <a 
+href="https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail" class="url" ><span 
+class="cmtt-10">https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail</span></a>, or
+<a 
+href="https://www.nytimes.com/2019/03/27/technology/turing-award-ai.html" class="url" ><span 
+class="cmtt-10">https://www.nytimes.com/2019/03/27/technology/turing-award-ai.html</span></a>. This is for users who already know the
+content they want. In the backend, the Python program is going to use the <span 
+class="cmtt-10">wget </span>utility. Specifically, <span 
+class="cmtt-10">wget -E -H -k -K -p</span>
+<span 
+class="cmtt-10">-P path url robots=off </span>where <span 
+class="cmtt-10">path </span>is the output directory and <span 
+class="cmtt-10">url </span>is the url that has been requested. Each of those
+letters does something to modify the request to created the desired behavior. For example, <span 
+class="cmtt-10">-p </span>tells <span 
+class="cmtt-10">wget </span>to download pictures
+and things linked on the website so the page appears exactly as it would in a web browser. More details for each option can
+be found in the <span 
+class="cmtt-10">wget </span>documentation[4]. All of those options ensures that downloading the URL requested gets the website
+exactly as it appears in a browser, including linked images. Additionally, it works with PDF and ZIP files, which is
+really important to ensure all possible media can be obtained. This method is also used by other parts of the
+program.
+<!--l. 159--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">1.2   </span> <a 
+ id="x1-30001.2"></a>Search</h4>
+<!--l. 161--><p class="noindent" >Sometimes the user will not know exactly what they want, so functionally was added to get the first page of Google search
+results (top 10 results). The <span 
+class="cmtt-10">googlesearch</span>[5] library was very helpful for this. This library provides a list of the URL&#8217;s on
+the first page of a Google Search. With that list, the established URL method described in section 1.1 is used
+to download each URL (it also checks to ensure to use the YouTube method if it is a YouTube link). The
+results are each in their own folder named based on the Google search rank (1 is first result, 2 is second result,
+etc).
+<!--l. 173--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">1.3   </span> <a 
+ id="x1-40001.3"></a>YouTube</h4>
+<!--l. 175--><p class="noindent" >It is well known that lot of quality educational and entertainment content is in video format, and the majority of that
+content is on YouTube. That is why the users can request YouTube videos (through a link, or a result from
+the search function). In this case, the <span 
+class="cmtt-10">youtube-dl</span>[6] program allows for content retrieval. A user can either
+request a YouTube video directly, or use the URL method which will detect the YouTube link and use this
+method.
+<!--l. 183--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">1.4   </span> <a 
+ id="x1-50001.4"></a>IPFS</h4>
+<!--l. 184--><p class="noindent" >IPFS stands for &#8220;InterPlanetary File System&#8221;, which is a &#8220;A peer-to-peer hypermedia protocol to make the web faster, safer,
+and more open&#8221;[7]. The internet that is familiar to most people is the client-server model[8], but IPFS changes that so
+everyone is both a client and a server. Media is distributed based of the crytographic hash, a unique ID for each object,
+instead of a URL. Anybody can add objects, and when requesting an object, it can be downloaded from any number of
+servers, not just the original person hosting the server. The <span 
+class="cmtt-10">ipfs </span>command line utility[9] is used to retrieve
+objects. This greatly expands the functionality of our product, because the operator can now do some content
+retrieval with no access to the internet. If two of these backpacks meet where there was no internet, they can
+easily exchange content on the IPFS, which could increase speed and decrease the cost of retrieval for those
+requests.
+<!--l. 199--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">2   </span> <a 
+ id="x1-60002"></a>Interfaces with Other Subsystems</h3>
+<!--l. 201--><p class="noindent" >Software is all about abstraction, so it is important to clearly define where the Command and Control subsystem will
+interface with the other subsystems. Ideally, all the other subsystems will work independently and a couple of links will get
+everything working together. These links are shown in Figure 2, and explained in further detail below. The
+interfaces are left inside the Python code in the appendix of this document, just commented out with the <span 
+class="cmtt-10">#</span>
+                                                                                                
+                                                                                                
+character.
+<!--l. 209--><p class="noindent" >Most of the meshing is done through the <span 
+class="cmtt-10">request </span>object, which can be found in the appendix.
+<!--l. 212--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.1   </span> <a 
+ id="x1-70002.1"></a>Input - List of Requests</h4>
+<!--l. 214--><p class="noindent" >Python, like all programming languages, only stores objects in memory while the program is running. That means when the
+program is shut down (or the machine is powered off), the data generated must be saved somewhere on the device or else
+that information would be lost. In this case, what is important is to be able to store the <span 
+class="cmtt-10">request </span>objects. This is completed
+by the data management subsystem. This means my subsystem will call <span 
+class="cmtt-10">get</span><span 
+class="cmtt-10">_all</span><span 
+class="cmtt-10">_requests() </span>which will
+retrieve the data from the hard drive of the machine about the requests, create the objects again (as they
+where destroyed from memory when the program shut down), and return that information to Command and
+Control.
+<!--l. 226--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.2   </span> <a 
+ id="x1-80002.2"></a>Output - Download path and status</h4>
+<!--l. 228--><p class="noindent" >Once my subsystem completes it&#8217;s download, it needs to update the database about the new status. This is again through the
+Data Management subsystem. To ensure each object is downloaded only once, each <span 
+class="cmtt-10">request </span>has two properties:
+<span 
+class="cmtt-10">file</span><span 
+class="cmtt-10">_location </span>and <span 
+class="cmtt-10">downloaded</span><span 
+class="cmtt-10">_status</span>. Once Command and Control has completed a download, it will call the Data
+Management method <span 
+class="cmtt-10">update</span><span 
+class="cmtt-10">_request(r) </span>where <span 
+class="cmtt-10">r </span>include the changes to <span 
+class="cmtt-10">file</span><span 
+class="cmtt-10">_location </span>and <span 
+class="cmtt-10">downloaded</span><span 
+class="cmtt-10">_status</span>. So the
+Data Management subsystem knows which database entry to update, a Universally Unique Identifier (UUID)[10] is used to
+identify each request.
+<!--l. 240--><p class="noindent" ><hr class="figure"><div class="figure" 
+>
+                                                                                                
+                                                                                                
+<a 
+ id="x1-8001r2"></a>
+                                                                                                
+                                                                                                
+<!--l. 242--><p class="noindent" ><img 
+src="input-output.png" alt="PIC"  
+>
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;2: </span><span  
+class="content">Diagram describing the inputs and outputs of the Command and Control sub-system <span 
+class="cmtt-10">request</span>. Jake
+Vossen, 2019-04-01 </span></div><!--tex4ht:label?: x1-8001r2 -->
+                                                                                                
+                                                                                                
+<!--l. 246--><p class="noindent" ></div><hr class="endfigure">
+<h3 class="sectionHead"><span class="titlemark">3   </span> <a 
+ id="x1-90003"></a>Stakeholder Considerations</h3>
+<!--l. 250--><p class="noindent" >The primary concern for the Command and Control subsystem is ensuring that the primary forms of retrieval are supported.
+In an interview with Anthony Wanjiru, who lived in Kenya for 35 years, he said the most important types of content are
+either a URL (either as a web page, pdf, etc), YouTube, Google Searches, and while IPFS isn&#8217;t widely used, it has a lot of
+potential[13]. He also said that local content is on the rise, and a method to upload content would be really beneficial. While
+this was not implemented at this time, due to specifics with integration with the other subsystems, this could be
+implemented later.
+<!--l. 261--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">3.1   </span> <a 
+ id="x1-100003.1"></a>Pricing</h4>
+<!--l. 263--><p class="noindent" >Due to the emphasis of using our system in low income areas, all software that is used in this process is free to use and
+distribute. This optimizes the number of people that can use this software.
+<!--l. 268--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">4   </span> <a 
+ id="x1-110004"></a>Validation</h3>
+<!--l. 270--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">4.1   </span> <a 
+ id="x1-120004.1"></a>File Retrieval</h4>
+<!--l. 271--><p class="noindent" >Testing is one of the most fundamentally important things in software development. It is easy to write code, but it is not
+useful if it can&#8217;t work under a variety of difficult tests. A handful of curated tested designed to test the boundaries of the
+code have been picked. To verify the results, there are two primary methods. The first, is a SHA-512 sum,
+which is a crytographically secure way to ensure two files are the same[11], the first file being originally from a
+manual download, and the second one from the Command and Control Subsystem Python program. If the two
+hashes are the same, the subsystem was successful. However, this cannot be used for all tests, because when
+downloading from a website, the original HTML files are modified for browsing offline (see the <span 
+class="cmtt-10">-k </span>option on <span 
+class="cmtt-10">wget</span>).
+This makes it impossible to cryptographically ensure that the requested file is the same as the downloaded
+file, so a visual analysis is preformed to analyze the two documents and ensure that they are identical. The
+table below explains the tests preformed, where the &#8220;Analysis Method&#8221; is either visual or hash to preform the
+check.
+<div class="table">
+                                                                                                
+                                                                                                
+<!--l. 292--><p class="noindent" ><a 
+ id="x1-12001r1"></a><hr class="float"><div class="float" 
+>
+                                                                                                
+                                                                                                
+ <div class="caption" 
+><span class="id">Table&#x00A0;1: </span><span  
+class="content">File Download Tests Preformed, Jake Vossen, 2019-04-01 </span></div><!--tex4ht:label?: x1-12001r1 -->
+<!--tex4ht:inline--><div class="tabular"> <table id="TBL-2" class="tabular" 
+cellspacing="0" cellpadding="0"  
+><colgroup id="TBL-2-1g"><col 
+id="TBL-2-1"></colgroup><colgroup id="TBL-2-2g"><col 
+id="TBL-2-2"></colgroup><colgroup id="TBL-2-3g"><col 
+id="TBL-2-3"></colgroup><colgroup id="TBL-2-4g"><col 
+id="TBL-2-4"></colgroup><colgroup id="TBL-2-5g"><col 
+id="TBL-2-5"></colgroup><tr  
+ style="vertical-align:baseline;" id="TBL-2-1-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-1"  
+class="td11">Type    </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-2"  
+class="td11">Value                                                                                                                    </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-3"  
+class="td11">Expected Result                                                     </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-4"  
+class="td11">Analysis Method</td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-1-5"  
+class="td11">Expected = Actual?</td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-2-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-1"  
+class="td11">URL      </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-2"  
+class="td11">https://www.gutenberg.org/cache/epub/2265/pg2265.txt                                                </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-3"  
+class="td11">Text of &#8220;Hamlet&#8221; By Shakespeare                              </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-4"  
+class="td11">Hash                </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-2-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-3-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-1"  
+class="td11">URL      </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-2"  
+class="td11">https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46507.pdf</td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-3"  
+class="td11">PDF of Google Machine Learning Research Paper         </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-4"  
+class="td11">Hash                </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-3-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-4-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-1"  
+class="td11">URL      </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-2"  
+class="td11">https://en.wikipedia.org/wiki/Monty_Python_and_the_Holy_Grail                                   </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-3"  
+class="td11">Wikipedia entry for &#8220;Monty Python and the Holy Grail&#8221;</td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-4"  
+class="td11">Visual              </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-4-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-5-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-1"  
+class="td11">YouTube</td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-2"  
+class="td11">https://www.youtube.com/watch?v=Gbtulv0mnlU                                                        </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-3"  
+class="td11">NASA Shuttle Recovery Video                                   </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-4"  
+class="td11">Visual              </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-5-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-6-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-1"  
+class="td11">search    </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-2"  
+class="td11">What Is the Airspeed Velocity of an Unladen Swallow?                                                   </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-3"  
+class="td11">Google search results                                               </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-4"  
+class="td11">Visual              </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-6-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-7-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-1"  
+class="td11">ipfs       </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-2"  
+class="td11">/ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme                         </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-3"  
+class="td11">IPFS introduction document                                     </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-4"  
+class="td11">Hash                </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-7-5"  
+class="td11">Yes                      </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-2-8-"><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-1"  
+class="td11">ipfs       </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-2"  
+class="td11">/ipfs/QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe/mosaic.png                   </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-3"  
+class="td11">300 MB picture of the moon                                     </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-4"  
+class="td11">Hash                </td><td  style="white-space:nowrap; text-align:left;" id="TBL-2-8-5"  
+class="td11">Yes                      </td></tr></table></div>
+                                                                                                
+                                                                                                
+</div><hr class="endfloat" />
+</div>
+<h4 class="subsectionHead"><span class="titlemark">4.2   </span> <a 
+ id="x1-130004.2"></a>Multi threading</h4>
+<!--l. 319--><p class="noindent" >The other important validation is to ensure that the multi threading described in section 1 improves results. I ran the
+program with 8 fairly large requests and used the <span 
+class="cmtt-10">time</span>[12] utility to measure the run time of the program. The results are
+shown below:
+<div class="table">
+                                                                                                
+                                                                                                
+<!--l. 324--><p class="noindent" ><a 
+ id="x1-13001r2"></a><hr class="float"><div class="float" 
+>
+                                                                                                
+                                                                                                
+ <div class="caption" 
+><span class="id">Table&#x00A0;2: </span><span  
+class="content">Tests Preformed, Jake Vossen, 2019-04-01 </span></div><!--tex4ht:label?: x1-13001r2 -->
+<div class="tabular"> <table id="TBL-3" class="tabular" 
+cellspacing="0" cellpadding="0"  
+><colgroup id="TBL-3-1g"><col 
+id="TBL-3-1"></colgroup><colgroup id="TBL-3-2g"><col 
+id="TBL-3-2"></colgroup><colgroup id="TBL-3-3g"><col 
+id="TBL-3-3"></colgroup><colgroup id="TBL-3-4g"><col 
+id="TBL-3-4"></colgroup><tr  
+ style="vertical-align:baseline;" id="TBL-3-1-"><td  style="white-space:nowrap; text-align:left;" id="TBL-3-1-1"  
+class="td11">1 Core           </td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-1-2"  
+class="td11">2 Cores         </td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-1-3"  
+class="td11">4 Cores         </td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-1-4"  
+class="td11">8 Cores         </td>
+</tr><tr 
+class="hline"><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr><tr  
+ style="vertical-align:baseline;" id="TBL-3-2-"><td  style="white-space:nowrap; text-align:left;" id="TBL-3-2-1"  
+class="td11">161.277 seconds</td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-2-2"  
+class="td11">53.927 seconds</td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-2-3"  
+class="td11">45.984 seconds</td><td  style="white-space:nowrap; text-align:left;" id="TBL-3-2-4"  
+class="td11">46.448 seconds</td></tr></table>
+</div>
+                                                                                                
+                                                                                                
+</div><hr class="endfloat" />
+</div>
+<!--l. 338--><p class="noindent" >From this data, it is clear that the multi threading is successful in decreasing the time required to download multiple
+requests. Further work could be done to multi thread the <span 
+class="cmtt-10">googlesearch </span>library, as the current multi threading solution does
+not support sub threads.
+<h3 class="sectionHead"><span class="titlemark">5   </span> <a 
+ id="x1-140005"></a>Idea Generation / Software Choices and Requirements</h3>
+<!--l. 344--><p class="noindent" >Below is the reasoning for each software library and tool picked. It also acts as a requirements list.
+     <ul class="itemize1">
+     <li class="itemize">Python - Easy for beginners to understand, has a lot of libraries, powerful
+     </li>
+     <li class="itemize"><span 
+class="cmtt-10">googlesearch </span>- It is really difficult to parse the URLs and submit a search to Google through plain HTTP
+     requests, and this library takes care of this as well as providing updates if the format changes in the future.
+     </li>
+     <li class="itemize"><span 
+class="cmtt-10">youtube</span><span 
+class="cmtt-10">_dl </span>- Written in Python, does exactly what is needed, and also supports sites that aren&#8217;t YouTube
+     which expands the usefullness of this project
+     </li>
+     <li class="itemize"><span 
+class="cmtt-10">wget </span>- Open source, widely used, and can create a snapshot as the website exactly appears, instead of just the
+     file at the specific URL.
+     </li>
+     <li class="itemize">IPFS - Allows for the decentralization of content and therefor increases download speed</li></ul>
+<!--l. 366--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">6   </span> <a 
+ id="x1-150006"></a>Appendix</h3>
+<!--l. 368--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">6.1   </span> <a 
+ id="x1-160006.1"></a>Command and Control Python Program</h4>
+<!--l. 369--><div class="lstinputlisting">
+<a 
+ id="x1-16001"></a>
+<span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16002r1"></a></span><span 
+class="t1xbtt-">from</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">request</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">Request</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16003r2"></a></span><span 
+class="t1xbtt-">from</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">user</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">user</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16004r3"></a></span><span 
+class="t1xbtt-">from</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">datetime</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">datetime</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16005r4"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16006r5"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">subprocess</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16007r6"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">os</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16008r7"></a></span><span 
+class="t1xbtt-">from</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">googlesearch</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">search</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16009r8"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">youtube_dl</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16010r9"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">multiprocessing</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16011r10"></a></span><span 
+class="t1xbtt-">from</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">multiprocessing</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">Pool</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16012r11"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16013r12"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_all_requests</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">requests</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16014r13"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">threads_count</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">multiprocessing</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">cpu_count</span><span 
+class="t1xtt-">()</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">use</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">all</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">on</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">system</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">that</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">can</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16015r14"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Below</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">are</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">hard</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">coded</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">values</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">for</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">testing</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">effectiveness</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16016r15"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads_count</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">1</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16017r16"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads_count</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">2</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16018r17"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads_count</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">4</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16019r18"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads_count</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">8</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16020r19"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">with</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">Pool</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">threads_count</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">as</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">p</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16021r20"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">p</span><span 
+class="t1xtt-">.</span><span 
+class="t1xbtt-">map</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">download_request</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">requests</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16022r21"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">The</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">above</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">code</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">same</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">as</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">code</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">below</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">above</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">will</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">do</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">it</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">as</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">many</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">threads</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">as</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">possible</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16023r22"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16024r23"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">for</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">r</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">in</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16025r24"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">download_request</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">r</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16026r25"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16027r26"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">mkdir</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">mkdir</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Make</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Director</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">creates</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">folder</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">if</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">it</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">does</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">not</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">exist</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16028r27"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">not</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">os</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">exists</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16029r28"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">os</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">makedirs</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16030r29"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16031r30"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_request</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16032r31"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">downloaded_status</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16033r32"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">return</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16034r33"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">==</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">URL</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">are</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">dealing</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">plain</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">old</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">HTTP</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">request</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16035r34"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16036r35"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">output</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16037r36"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_url</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16038r37"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">==</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">search</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16039r38"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">search_list</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">list</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">search</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">stop</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">10)</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">call</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">google_search</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">library</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">get</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">list</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">urls</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">for</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">search</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">terms</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">stored</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">in</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">r</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">value</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16040r39"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">for</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">i</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">in</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">range</span><span 
+class="t1xtt-">(</span><span 
+class="t1xbtt-">len</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">search_list</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">it</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">would</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">nice</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">multithread</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">but</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">are</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">already</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">multithreaded</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">at</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">request</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">level</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">More</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">work</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">could</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">done</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">improve</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">system</span><span 
+class="cmitt-10">.</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16041r40"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">search_list</span><span 
+class="t1xtt-">[</span><span 
+class="t1xtt-">i</span><span 
+class="t1xtt-">]</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16042r41"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">output</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">str</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">i</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">1)</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16043r42"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">youtube</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">not</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">in</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Youtube</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">vidoes</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">are</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">not</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">going</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">able</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">work</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">those</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">will</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">for</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">youtube</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">request</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16044r43"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_url</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16045r44"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">else</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16046r45"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_youtube</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16047r46"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">==</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">youtube</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16048r47"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">output</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16049r48"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_youtube</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16050r49"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">if</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">==</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">ipfs</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16051r50"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">output</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">/</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16052r51"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_ipfs</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16053r52"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">set_file_location</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16054r53"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">set_downloaded_status</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">True</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16055r54"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16056r55"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">mark_as_downloaded</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">p</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">where</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">function</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">will</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">intergrate</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">data</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">managment</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">update</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">file</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">location</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">and</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">downlaoded</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">status</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16057r56"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16058r57"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_url</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16059r58"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">mkdir</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16060r59"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">subprocess</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">call</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">wget</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">E</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">H</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">k</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">K</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">p</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">P</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">robots</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">off</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">shell</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">True</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16061r60"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16062r61"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_youtube</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16063r62"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">mkdir</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16064r63"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">ydl_opts</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">{</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16065r64"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">outtmpl</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">%(</span><span 
+class="t1xtt-">title</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">s</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">mkv</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">add</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">title</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">file</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">name</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16066r65"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">}</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16067r66"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">with</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">youtube_dl</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">YoutubeDL</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">ydl_opts</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">as</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">ydl</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16068r67"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">ydl</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">download</span><span 
+class="t1xtt-">([</span><span 
+class="t1xtt-">url</span><span 
+class="t1xtt-">])</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16069r68"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16070r69"></a></span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">download_from_ipfs</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">ipfs_hash</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16071r70"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">mkdir</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16072r71"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">subprocess</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">call</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">r</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">ipfs</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">get</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">ipfs_hash</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">-</span><span 
+class="t1xtt-">o</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">+</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">path</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">shell</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">True</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requires</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">IPFS</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">daemon</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">running</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16073r72"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16074r73"></a></span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">def</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">main</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16075r74"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">get_all_requests</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">This</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">where</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">command</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">and</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">control</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">will</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">interafce</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Data</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Managment</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">It</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">will</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">return</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">list</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">from</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">database</span><span 
+class="cmitt-10">.</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16076r75"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">[]</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Because</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">can</span><span 
+class="cmitt-10">&#8217;</span><span 
+class="cmitt-10">t</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">do</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">above</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">method</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">are</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">going</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">create</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">mock</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">list</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16077r76"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">tests</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16078r77"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">URL</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">https</span><span 
+class="cmitt-10">://</span><span 
+class="cmitt-10">www</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">gutenberg</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">org</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">cache</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">epub</span><span 
+class="cmitt-10">/2265/</span><span 
+class="cmitt-10">pg2265</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">txt</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16079r78"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">URL</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">https</span><span 
+class="cmitt-10">://</span><span 
+class="cmitt-10">static</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">googleusercontent</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">com</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">media</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">research</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">google</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">com</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">en</span><span 
+class="cmitt-10">//</span><span 
+class="cmitt-10">pubs</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">archive</span><span 
+class="cmitt-10">/46507.</span><span 
+class="cmitt-10">pdf</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16080r79"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">URL</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">https</span><span 
+class="cmitt-10">://</span><span 
+class="cmitt-10">en</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">wikipedia</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">org</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">wiki</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">Monty_Python_and_the_Holy_Grail</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16081r80"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">search</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">What</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Airspeed</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Velocity</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">an</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Unladen</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Swallow</span><span 
+class="cmitt-10">?",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16082r81"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">search</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Library</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">of</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Congress</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16083r82"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">youtube</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">https</span><span 
+class="cmitt-10">://</span><span 
+class="cmitt-10">www</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">youtube</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">com</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">watch</span><span 
+class="cmitt-10">?</span><span 
+class="cmitt-10">v</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">NtrVwX1ncqk</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16084r83"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">youtube</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">https</span><span 
+class="cmitt-10">://</span><span 
+class="cmitt-10">www</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">youtube</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">com</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">watch</span><span 
+class="cmitt-10">?</span><span 
+class="cmitt-10">v</span><span 
+class="cmitt-10">=</span><span 
+class="cmitt-10">Gbtulv0mnlU</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16085r84"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">ipfs</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"/</span><span 
+class="cmitt-10">ipfs</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">readme</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16086r85"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">append</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">Request</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">ipfs</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"/</span><span 
+class="cmitt-10">ipfs</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">QmVLTMHtLRhnft3QspDx4qTJeXY6hiib1j77UfQmY54CGe</span><span 
+class="cmitt-10">/</span><span 
+class="cmitt-10">mosaic</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">png</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">("</span><span 
+class="cmitt-10">Jake</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">Vossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">jakevossen</span><span 
+class="cmitt-10">",</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">asdf</span><span 
+class="cmitt-10">")</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">datetime</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">now</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">)</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16087r86"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16088r87"></a></span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">download_all_requests</span><span 
+class="cmitt-10">(</span><span 
+class="cmitt-10">requests</span><span 
+class="cmitt-10">)</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16089r88"></a></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-16090r89"></a></span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">main</span><span 
+class="cmitt-10">()</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">start</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">program</span>
+</div>
+<!--l. 371--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">6.2   </span> <a 
+ id="x1-170006.2"></a><span 
+class="cmtt-10">Request </span>Object</h4>
+<!--l. 372--><div class="lstinputlisting">
+<a 
+ id="x1-17001"></a>
+<span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17002r1"></a></span><span 
+class="t1xbtt-">import</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17003r2"></a></span><span 
+class="t1xbtt-">class</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">Request</span><span 
+class="t1xtt-">:</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17004r3"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">This</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">is</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">the</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">main</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">object</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">that</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">stores</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">information</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">about</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">somones</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">request</span><span 
+class="t1xtt-">&#8217;</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17005r4"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">__init__</span><span 
+class="t1xtt-">(</span><span class="lstinline"></span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">user</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">date</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17006r5"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">kind</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">options</span><span 
+class="cmitt-10">:</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">"</span><span 
+class="cmitt-10">search</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">url</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">IPFS</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">hash</span><span 
+class="cmitt-10">,</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">git</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">URL</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17007r6"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">value</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">value</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">associated</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">type</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17008r7"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">user</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">user</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">The</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">associated</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">with</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">this</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">request</span><span 
+class="cmitt-10">.</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">We</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">can</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">make</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">user</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">object</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">later</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">if</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">we</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">feel</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">like</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">it</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17009r8"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">date</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">date</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">This</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">should</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">date</span><span 
+class="cmitt-10">-</span><span 
+class="cmitt-10">time</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">object</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17010r9"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">downloaded_status</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">False</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">This</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">not</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">included</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">in</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">constructor</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">because</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">state</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">should</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">always</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">false</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">when</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">starting</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17011r10"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">=</span><span 
+class="t1xbtt-">str</span><span 
+class="t1xtt-">(</span><span 
+class="t1xtt-">uuid</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">uuid4</span><span 
+class="t1xtt-">()</span><span 
+class="t1xtt-">)</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17012r11"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">file_location</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">"</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">There</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">no</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">downloaded</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">location</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">when</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">the</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">object</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">created</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17013r12"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">set_downloaded_status</span><span 
+class="t1xtt-">(</span><span class="lstinline"></span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">state</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17014r13"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">downloaded_status</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">state</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Should</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">boolean</span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17015r14"></a></span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xbtt-">def</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">set_file_location</span><span 
+class="t1xtt-">(</span><span class="lstinline"></span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">,</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">loc</span><span 
+class="t1xtt-">)</span><span 
+class="t1xtt-">:</span><span class="lstinline"></span><span 
+class="t1xtt-">&#x00A0;</span><br /><span class="label"><a 
+ id="x1-17016r15"></a></span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">&#x00A0;</span><span 
+class="t1xbtt-">self</span><span 
+class="t1xtt-">.</span><span 
+class="t1xtt-">file_location</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">=</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="t1xtt-">loc</span><span 
+class="t1xtt-">&#x00A0;</span><span 
+class="cmitt-10">#</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">Is</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">there</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">file</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">object</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">that</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">would</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">be</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">better</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">to</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">use</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">than</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">a</span><span 
+class="cmitt-10">&#x00A0;</span><span 
+class="cmitt-10">string</span><span 
+class="cmitt-10">?</span>
+</div>
+<!--l. 374--><p class="noindent" >
+                                                                                                
+                                                                                                
+<h3 class="sectionHead"><span class="titlemark">7   </span> <a 
+ id="x1-180007"></a>Bibliography</h3>
+[1] &#8220;multiprocessing - Process-based parallelism,&#8221; <span 
+class="cmti-10">multiprocessing - Process-based parallelism - Python 3.7.3</span>
+   <span 
+class="cmti-10">documentation</span>. [Online]. Available: <a 
+href="https://docs.python.org/3.7/library/multiprocessing.html" class="url" ><span 
+class="cmtt-10">https://docs.python.org/3.7/library/multiprocessing.html</span></a>. [Accessed:
+   03-Apr-2019].
+[2] &#8220;Hardware Survey - CPU Cores,&#8221; <span 
+class="cmti-10">Hardware Survey - CPU Cores</span>. [Online]. Available:
+   <a 
+href="https://www.pcbenchmarks.net/number-of-cpu-cores.html" class="url" ><span 
+class="cmtt-10">https://www.pcbenchmarks.net/number-of-cpu-cores.html</span></a>. [Accessed: 03-Apr-2019].
+[3] &#8220;Raspberry Pi 3 Model B,&#8221; Raspberry Pi. [Online]. Available: <a 
+href="https://www.raspberrypi.org/products/raspberry-pi-3-model-b/" class="url" ><span 
+class="cmtt-10">https://www.raspberrypi.org/products/raspberry-pi-3-model-b/</span></a>.
+   [Accessed: 03-Apr-2019].
+[4] &#8220;GNU Wget 1.20 Manual,&#8221; <span 
+class="cmti-10">GNU Wget 1.20 Manual</span>. [Online]. Available: <a 
+href="https://www.gnu.org/software/wget/manual/wget.html" class="url" ><span 
+class="cmtt-10">https://www.gnu.org/software/wget/manual/wget.html</span></a>.
+   [Accessed: 03-Apr-2019].
+[5] MarioVilas, &#8220;MarioVilas/googlesearch,&#8221; GitHub, 06-Mar-2019. [Online]. Available: <a 
+href="https://github.com/MarioVilas/googlesearch" class="url" ><span 
+class="cmtt-10">https://github.com/MarioVilas/googlesearch</span></a>.
+   [Accessed: 03-Apr-2019].
+[6] Ytdl-Org, &#8220;ytdl-org/youtube-dl&#8221; GitHub, 03-Apr-2019. [Online]. Available: <a 
+href="https://github.com/ytdl-org/youtube-dl/" class="url" ><span 
+class="cmtt-10">https://github.com/ytdl-org/youtube-dl/</span></a>.
+   [Accessed: 03-Apr-2019].
+[7] &#8220;IPFS is the Distributed Web&#8221; IPFS. [Online]. Available: <a 
+href="https://ipfs.io/" class="url" ><span 
+class="cmtt-10">https://ipfs.io/</span></a>. [Accessed: 03-Apr-2019].
+[8] &#8220;Client-Server Mode,&#8221; [Online]. Available: <a 
+href="https://web.cs.wpi.edu/~cs513/s07/week1-unixsock.pdf" class="url" ><span 
+class="cmtt-10">https://web.cs.wpi.edu/</span><span 
+class="cmtt-10">~</span><span 
+class="cmtt-10">cs513/s07/week1-unixsock.pdf</span></a>. [Accessed:
+   02-Apr-2019].
+[9] &#8220;IPFS Documentation,&#8221; <span 
+class="cmti-10">Install IPFS &#8211; IPFS Documentation</span>. [Online]. Available: <a 
+href="https://docs.ipfs.io/introduction/install/" class="url" ><span 
+class="cmtt-10">https://docs.ipfs.io/introduction/install/</span></a>.
+   [Accessed: 03-Apr-2019].
+[10] &#8220;A Universally Unique IDentifier (UUID) URN Namespace,&#8221; <span 
+class="cmti-10">IETF Tools</span>. [Online]. Available:
+   <a 
+href="https://tools.ietf.org/html/rfc4122.html" class="url" ><span 
+class="cmtt-10">https://tools.ietf.org/html/rfc4122.html</span></a>. [Accessed: 03-Apr-2019].
+[11] C. H. Romie, &#8220;Secure Hash Standard (SHS)&#8221; Aug-2015. [Online]. Available:
+   <a 
+href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf" class="url" ><span 
+class="cmtt-10">https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf</span></a>. [Accessed: 02-Apr-2019].
+[12] &#8220;time,&#8221; <span 
+class="cmti-10">time(1) - OpenBSD manual pages</span>. [Online]. Available: https://man.openbsd.org/time. [Accessed:
+   03-Apr-2019].
+[13] J. J. Vossen and A. Wanjiru, &#8220;Discussions of Content Distribution in Kenya,&#8221; 13-Feb-2019.
+ 
+</body></html> 
+
+                                                                                                
+
+
