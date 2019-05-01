@@ -1,7 +1,6 @@
 #+TITLE: Internet Backpacks
 
-This repository has been archived as it is no longer any development
-or support/bug fixes.
+As this is a one time project, the repository has been archived.
 
 "Internet Backpacks" is a project for EDNS 151 at the Colorado School
 of Mines. 
