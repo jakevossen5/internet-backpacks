@@ -13,6 +13,4 @@ pictures.
 All code is licensed under the MIT licence, feel free to use the
 reports as reference or examples.
 
-The Command and Control subsystem can be found in the 
-
 Authors can be found [[https://github.com/jakevossen5/internet-backpacks/settings/collaboration][here]].
