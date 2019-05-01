@@ -1,0 +1,18 @@
+#+TITLE: Internet Backpacks
+
+"Internet Backpacks" is a project for EDNS 151 at the Colorado School
+of Mines. 
+
+It solves the problem of trying to deliver internet for places that
+internet is too expensive. See the [[final report][final report]] for details and
+pictures. 
+
+[[file:team-photo.jpg]]
+
+
+All code is licensed under the MIT licence, feel free to use the
+reports as reference or examples.
+
+The Command and Control subsystem can be found in the 
+
+Authors can be found [[https://github.com/jakevossen5/internet-backpacks/settings/collaboration][here]].
