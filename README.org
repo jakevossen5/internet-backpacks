@@ -1,5 +1,8 @@
 #+TITLE: Internet Backpacks
 
+This repository has been archived as it is no longer any development
+or support/bug fixes.
+
 "Internet Backpacks" is a project for EDNS 151 at the Colorado School
 of Mines. 
 
@@ -10,7 +13,7 @@ pictures.
 [[file:team-photo.jpg]]
 
 
-All code is licensed under the MIT licence, feel free to use the
+All code is licensed under the MIT license, feel free to use the
 reports as reference or examples.
 
 Authors can be found [[https://github.com/jakevossen5/internet-backpacks/settings/collaboration][here]].
