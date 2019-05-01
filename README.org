@@ -4,7 +4,7 @@
 of Mines. 
 
 It solves the problem of trying to deliver internet for places that
-internet is too expensive. See the [[https://github.com/jakevossen5/internet-backpacks/blob/master/final-report.pdf][final report]] for details and
+internet is too expensive. See the [[final-report.pdf][final report]] for details and
 pictures. 
 
 [[file:team-photo.jpg]]
